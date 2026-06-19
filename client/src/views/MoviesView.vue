@@ -1,5 +1,5 @@
 <script setup lang="ts">
-import { getMovieById, getMoviesTest } from '@/services/api'
+import { getMovieById, getMoviesByPage, getMoviesTest } from '@/services/api'
 import { ref } from 'vue'
 
 const search = ref('')
@@ -111,7 +111,7 @@ function customFilter(value: string | null, query: string | null) {
 }
 
 function onClick() {
-  console.log('Button clicked')
+  console.log('first page')
   getMoviesTest()
 }
 
@@ -119,12 +119,18 @@ function onClickGetId() {
   console.log('Get singular movie')
   getMovieById('573a1390f29313caabcd446f')
 }
+
+function onClickGetPage() {
+  console.log('specific page')
+  getMoviesByPage(2)
+}
 </script>
 
 <template>
   <h1>This is the movies page</h1>
   <v-btn @click="onClick">Click me</v-btn>
   <v-btn @click="onClickGetId">Click me2</v-btn>
+  <v-btn @click="onClickGetPage">Click me3</v-btn>
 
   <v-card title="Nutrition" flat>
     <v-data-table

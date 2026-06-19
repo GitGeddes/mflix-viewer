@@ -8,10 +8,12 @@ const client = new MongoClient(connectionString);
 
 let conn;
 try {
+  console.log("Server successfully connected to MongoDB.");
   conn = await client.connect();
 } catch (e) {
-  console.error(e);
+  console.error("Server failed to connect to MongoDB", e);
 }
 
-let db = conn.db("sample_mflix");
+// Expect to have a connection object.
+let db = conn!.db("sample_mflix");
 export default db;
