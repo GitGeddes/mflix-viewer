@@ -1,7 +1,6 @@
 import axios from 'axios';
 const API_URL = "http://localhost:3000/";
 
-// Hello World axios example
 export async function getIndex() {
     try {
         const response = await axios.get(API_URL);
@@ -17,5 +16,16 @@ export async function getUsers() {
         console.log(response.data);
     } catch (error) {
         console.error(error);
+    }
+}
+
+export async function getMoviesTest() {
+    try {
+        const response = await axios.get(API_URL + "movies/test");
+        console.log(response.data);
+        return response.data;
+    } catch (error) {
+        console.error(error);
+        return null;
     }
 }
