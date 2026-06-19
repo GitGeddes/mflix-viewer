@@ -111,8 +111,8 @@ function customFilter(value: string | null, query: string | null) {
 }
 
 function onClick() {
-  console.log("Button clicked");
-  getMoviesTest();
+  console.log('Button clicked')
+  getMoviesTest()
 }
 </script>
 
