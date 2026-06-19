@@ -2,10 +2,6 @@ import { fileURLToPath } from 'node:url'
 import { mergeConfig, defineConfig, configDefaults } from 'vitest/config'
 import viteConfig from './vite.config'
 
-import { vuetify } from './src/main'
-import { config } from '@vue/test-utils'
-config.global.plugins = [vuetify]
-
 export default mergeConfig(
   viteConfig,
   defineConfig({
