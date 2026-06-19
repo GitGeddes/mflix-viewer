@@ -1,16 +1,9 @@
 <script setup lang="ts">
-import { getMoviesByPage, type Movie } from '@/services/api'
+import { getAllMovies, getMoviesByPage, type Movie } from '@/services/api'
 import { ref, type Ref } from 'vue'
 
 const search = ref('')
-const start: 'start' = 'start'
 const headers = [
-  {
-    align: start,
-    key: '_id',
-    sortable: false,
-    title: 'ID',
-  },
   { key: 'title', title: 'Title' },
   { key: 'year', title: 'Year' },
   { key: 'runtime', title: 'Runtime' },
@@ -24,13 +17,18 @@ const movies: Ref<Movie[]> = ref([])
 const page = ref(1)
 const itemsPerPage = ref(10)
 
-getMoviesByPage(page.value).then((res) => {
-  if (!res) {
-    console.error('Error loading page')
-    return
-  }
-  movies.value = res
-})
+// Initialize movies table on load
+getMovies()
+
+function getMovies() {
+  getAllMovies().then((res) => {
+    if (!res) {
+      console.error('Error loading movies')
+      return
+    }
+    movies.value = res
+  })
+}
 
 function searchFilter(value: string | null, query: string | null) {
   return (
@@ -42,19 +40,23 @@ function searchFilter(value: string | null, query: string | null) {
 }
 
 function onClickGetPage() {
-  getMoviesByPage(page.value).then((res) => {
+  getPage(page.value + 1)
+}
+
+function getPage(pageNum: number = page.value) {
+  getMoviesByPage(pageNum).then((res) => {
     if (!res) {
       console.error('Error loading page')
       return
     }
     movies.value = res
   })
+  page.value = pageNum
 }
 </script>
 
 <template>
-  <!-- <h1>This is the movies page</h1> -->
-  <v-btn @click="onClickGetPage">Click me</v-btn>
+  <v-btn @click="onClickGetPage">Get Next Page</v-btn>
 
   <v-card title="Movies" flat>
     <v-data-table

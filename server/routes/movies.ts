@@ -7,8 +7,14 @@ const PAGE_LIMIT = 50;
 var router = express.Router();
 
 /* GET movies home page. */
-router.get("/", function (req, res, next) {
-  res.send("movies endpoint");
+router.get("/", async function (req, res, next) {
+  const sort: mongodb.Sort = {
+    title: 1,
+  };
+
+  let collection = await db.collection("movies");
+  let results = await collection.find().sort(sort).toArray();
+  res.send(results).status(200);
 });
 
 /* GET specific page of movies. */

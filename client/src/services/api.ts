@@ -52,6 +52,16 @@ export interface Movie {
   year: Number
 }
 
+export async function getAllMovies(): Promise<Movie[] | null> {
+  try {
+    const response = await axios.get(API_URL + 'movies')
+    return response.data
+  } catch (error) {
+    console.error(error)
+    return null
+  }
+}
+
 export async function getMoviesByPage(page: number): Promise<Movie[] | null> {
   try {
     const response = await axios.get(API_URL + `movies/page/${page}`)

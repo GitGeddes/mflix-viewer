@@ -31,6 +31,8 @@ npm install
 npm run dev
 ```
 
+The front end server will then be located at http://localhost:5173
+
 ### Type-Check, Compile and Minify for Production
 
 ```sh
