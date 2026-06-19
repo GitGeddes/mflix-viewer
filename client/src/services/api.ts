@@ -12,7 +12,7 @@ export interface Movie {
   countries: Array<String>
   directors: Array<String>
   fullPlot?: String
-  genres: Array<String>
+  genres: Array<string>
   imdb: {
     id: Number
     rating: Number
@@ -26,7 +26,7 @@ export interface Movie {
   rated?: String
   released: Date
   runtime: Number
-  title: String
+  title: string
   tomatoes: {
     boxOffice?: String
     consensus?: String

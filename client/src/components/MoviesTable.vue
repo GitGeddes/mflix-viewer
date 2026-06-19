@@ -1,7 +1,8 @@
 <script setup lang="ts">
 import { getAllMovies, type Movie } from '@/services/api'
-import { ref, type Ref } from 'vue'
+import { onMounted, ref, type Ref } from 'vue'
 import { VCard } from 'vuetify/components'
+import TruncatedField from './TruncatedField.vue'
 
 // Search query
 const search = ref('')
@@ -22,7 +23,9 @@ const movies: Ref<Movie[]> = ref([])
 const isLoading = ref(true)
 
 // Initialize movies table on load
-getMovies()
+onMounted(() => {
+  getMovies()
+})
 // Get all of the movies and update the data table.
 function getMovies() {
   getAllMovies().then((res) => {
@@ -71,12 +74,15 @@ function searchFilter(value: string | null, query: string | null) {
         ></v-text-field>
       </template>
 
+      <!-- TODO: Filtering options for each column -->
+      <!-- Use min and max for number fields like release year, runtime and IMDB rating -->
+      <!-- Use checkboxes of strings for genres -->
+      <!-- Maybe use first letter for title? -->
+
       <!-- eslint-disable-next-line vue/valid-v-slot -->
       <template v-slot:item.title="{ item }">
-        <v-card flat>
-          <!-- Account for very long titles -->
-          <v-card-text class="text-truncate" style="width: 300px">{{ item.title }}</v-card-text>
-        </v-card>
+        <!-- Account for very long titles -->
+        <TruncatedField :text="item.title" width="300"></TruncatedField>
       </template>
 
       <!-- eslint-disable-next-line vue/valid-v-slot -->
@@ -89,12 +95,8 @@ function searchFilter(value: string | null, query: string | null) {
 
       <!-- eslint-disable-next-line vue/valid-v-slot -->
       <template v-slot:item.genres="{ item }">
-        <v-card flat>
-          <!-- Account for the genre lists being long -->
-          <v-card-text class="text-truncate" style="max-width: 200px">{{
-            item.genres
-          }}</v-card-text>
-        </v-card>
+        <!-- Account for the genre lists being long -->
+        <TruncatedField :text="item.genres" width="200"></TruncatedField>
       </template>
 
       <!-- eslint-disable-next-line vue/valid-v-slot -->
