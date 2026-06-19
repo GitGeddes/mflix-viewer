@@ -48,7 +48,7 @@ function searchFilter(value: string | null, query: string | null) {
 </script>
 
 <template>
-  <v-card title="Movies" flat>
+  <v-card title="Movies" flat data-testid="title">
     <v-data-table
       :headers="headers"
       :items="movies"
