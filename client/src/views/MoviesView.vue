@@ -1,107 +1,38 @@
 <script setup lang="ts">
-import { getMovieById, getMoviesByPage, getMoviesTest } from '@/services/api'
-import { ref } from 'vue'
+import { getMoviesByPage, type Movie } from '@/services/api'
+import { ref, type Ref } from 'vue'
 
 const search = ref('')
 const start: 'start' = 'start'
 const headers = [
   {
     align: start,
-    key: 'name',
+    key: '_id',
     sortable: false,
-    title: 'Dessert (100g serving)',
+    title: 'ID',
   },
-  { key: 'calories', title: 'Calories' },
-  { key: 'fat', title: 'Fat (g)' },
-  { key: 'carbs', title: 'Carbs (g)' },
-  { key: 'protein', title: 'Protein (g)' },
-  { key: 'iron', title: 'Iron (%)' },
+  { key: 'title', title: 'Title' },
+  { key: 'year', title: 'Year' },
+  { key: 'runtime', title: 'Runtime' },
+  { key: 'rated', title: 'Rated' },
+  { key: 'genres', title: 'Genres' },
+  { key: 'imdb.rating', title: 'IMDB Rating' },
+  { key: 'poster', title: 'Poster' },
 ]
 
-const desserts = [
-  {
-    name: 'Frozen Yogurt',
-    calories: 159,
-    fat: 6,
-    carbs: 24,
-    protein: 4,
-    iron: 1,
-  },
-  {
-    name: 'Ice cream sandwich',
-    calories: 237,
-    fat: 9,
-    carbs: 37,
-    protein: 4.3,
-    iron: 1,
-  },
-  {
-    name: 'Eclair',
-    calories: 262,
-    fat: 16,
-    carbs: 23,
-    protein: 6,
-    iron: 7,
-  },
-  {
-    name: 'Cupcake',
-    calories: 305,
-    fat: 3.7,
-    carbs: 67,
-    protein: 4.3,
-    iron: 8,
-  },
-  {
-    name: 'Gingerbread',
-    calories: 356,
-    fat: 16,
-    carbs: 49,
-    protein: 3.9,
-    iron: 16,
-  },
-  {
-    name: 'Jelly bean',
-    calories: 375,
-    fat: 0,
-    carbs: 94,
-    protein: 0,
-    iron: 0,
-  },
-  {
-    name: 'Lollipop',
-    calories: 392,
-    fat: 0.2,
-    carbs: 98,
-    protein: 0,
-    iron: 2,
-  },
-  {
-    name: 'Honeycomb',
-    calories: 408,
-    fat: 3.2,
-    carbs: 87,
-    protein: 6.5,
-    iron: 45,
-  },
-  {
-    name: 'Donut',
-    calories: 452,
-    fat: 25,
-    carbs: 51,
-    protein: 4.9,
-    iron: 22,
-  },
-  {
-    name: 'KitKat',
-    calories: 518,
-    fat: 26,
-    carbs: 65,
-    protein: 7,
-    iron: 6,
-  },
-]
+const movies: Ref<Movie[]> = ref([])
+const page = ref(1)
+const itemsPerPage = ref(10)
 
-function customFilter(value: string | null, query: string | null) {
+getMoviesByPage(page.value).then((res) => {
+  if (!res) {
+    console.error('Error loading page')
+    return
+  }
+  movies.value = res
+})
+
+function searchFilter(value: string | null, query: string | null) {
   return (
     value != null &&
     query != null &&
@@ -110,34 +41,28 @@ function customFilter(value: string | null, query: string | null) {
   )
 }
 
-function onClick() {
-  console.log('first page')
-  getMoviesTest()
-}
-
-function onClickGetId() {
-  console.log('Get singular movie')
-  getMovieById('573a1390f29313caabcd446f')
-}
-
 function onClickGetPage() {
-  console.log('specific page')
-  getMoviesByPage(2)
+  getMoviesByPage(page.value).then((res) => {
+    if (!res) {
+      console.error('Error loading page')
+      return
+    }
+    movies.value = res
+  })
 }
 </script>
 
 <template>
-  <h1>This is the movies page</h1>
-  <v-btn @click="onClick">Click me</v-btn>
-  <v-btn @click="onClickGetId">Click me2</v-btn>
-  <v-btn @click="onClickGetPage">Click me3</v-btn>
+  <!-- <h1>This is the movies page</h1> -->
+  <v-btn @click="onClickGetPage">Click me</v-btn>
 
-  <v-card title="Nutrition" flat>
+  <v-card title="Movies" flat>
     <v-data-table
       :headers="headers"
-      :items="desserts"
+      :items="movies"
       :search="search"
-      :custom-filter="customFilter"
+      :custom-filter="searchFilter"
+      :items-per-page="itemsPerPage"
       sort-asc-icon="mdi-sort-ascending"
       sort-desc-icon="mdi-sort-descending"
       sort-icon="mdi-swap-vertical"
@@ -151,6 +76,12 @@ function onClickGetPage() {
           hide-details
           single-line
         ></v-text-field>
+      </template>
+
+      <template v-slot:item.poster="{ item }">
+        <v-card class="my-2" elevation="1" rounded>
+          <v-img :src="`${item.poster}`" height="64" cover></v-img>
+        </v-card>
       </template>
     </v-data-table>
   </v-card>
