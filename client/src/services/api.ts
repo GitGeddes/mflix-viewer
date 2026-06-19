@@ -29,3 +29,12 @@ export async function getMoviesTest() {
     return null
   }
 }
+
+export async function getMovieById(id: string) {
+  try {
+    const response = await axios.get(API_URL + `movies/${id}`)
+    console.log(response.data)
+  } catch (error) {
+    console.error(error)
+  }
+}

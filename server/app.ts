@@ -1,5 +1,5 @@
 // Load env variables
-import "./src/loadEnvironment.ts";
+import "./src/loadEnv.ts";
 
 import express from "express";
 import cookieParser from "cookie-parser";

@@ -1,5 +1,5 @@
 <script setup lang="ts">
-import { getMoviesTest } from '@/services/api'
+import { getMovieById, getMoviesTest } from '@/services/api'
 import { ref } from 'vue'
 
 const search = ref('')
@@ -114,11 +114,17 @@ function onClick() {
   console.log('Button clicked')
   getMoviesTest()
 }
+
+function onClickGetId() {
+  console.log('Get singular movie')
+  getMovieById('573a1390f29313caabcd446f')
+}
 </script>
 
 <template>
   <h1>This is the movies page</h1>
   <v-btn @click="onClick">Click me</v-btn>
+  <v-btn @click="onClickGetId">Click me2</v-btn>
 
   <v-card title="Nutrition" flat>
     <v-data-table
