@@ -22,7 +22,7 @@ npm install
 npm run start
 ```
 
-This starts the server at `http://localhost:3000/`
+This starts the server at http://localhost:3000/.
 
 ## Template
 
