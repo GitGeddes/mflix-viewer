@@ -1,4 +1,5 @@
 <script setup lang="ts">
+import { getIndex } from '@/services/api'
 import { ref } from 'vue'
 
 const search = ref('')
@@ -108,10 +109,19 @@ function customFilter(value: string | null, query: string | null) {
     value.toString().indexOf(query) !== -1
   )
 }
+
+function onClick() {
+  console.log("Button clicked");
+  getIndex();
+}
 </script>
 
 <template>
   <h1>This is the movies page</h1>
+  <v-btn
+    @click="onClick"
+  >Click me</v-btn>
+
   <v-card title="Nutrition" flat>
     <v-data-table
       :headers="headers"
