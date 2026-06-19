@@ -1,6 +1,6 @@
 import express from "express";
 import db from "../src/dbConnection.ts";
-import mongodb, { ObjectId } from "mongodb";
+import { ObjectId, type Sort } from "mongodb";
 
 const PAGE_LIMIT = 50;
 
@@ -8,7 +8,7 @@ var router = express.Router();
 
 /* GET movies home page. */
 router.get("/", async function (req, res, next) {
-  const sort: mongodb.Sort = {
+  const sort: Sort = {
     title: 1,
   };
 
@@ -23,7 +23,7 @@ router.get("/page/:page", async function (req, res, next) {
   const page = Math.max(parseInt(req.params.page as string, 10) || 1, 1);
   // Zero-based offset for the first element on the page.
   const offset = (page - 1) * PAGE_LIMIT;
-  const sort: mongodb.Sort = {
+  const sort: Sort = {
     title: 1,
   };
 

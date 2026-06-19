@@ -14,6 +14,6 @@ try {
   console.error("Server failed to connect to MongoDB", e);
 }
 
-// Expect to have a connection object.
+// Force expect to have a connection object.
 let db = conn!.db("sample_mflix");
 export default db;
