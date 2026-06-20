@@ -1,8 +1,9 @@
 <script setup lang="ts">
-import { getAllMovies, type Movie } from '@/services/api'
+import { getAllMovies, getMaxRuntime, type Movie } from '@/services/api'
 import { onMounted, ref, type Ref } from 'vue'
 import { VCard } from 'vuetify/components'
 import TruncatedField from './TruncatedField.vue'
+import PosterImage from './PosterImage.vue'
 
 // Search query
 const search = ref('')
@@ -48,9 +49,14 @@ function searchFilter(value: string | null, query: string | null) {
     value.toString().indexOf(query) !== -1
   )
 }
+
+function onClick() {
+  getMaxRuntime()
+}
 </script>
 
 <template>
+  <v-btn @click="onClick">Get Max Runtime</v-btn>
   <v-card title="Movies" flat data-testid="title">
     <v-data-table
       :headers="headers"
@@ -79,31 +85,23 @@ function searchFilter(value: string | null, query: string | null) {
       <!-- Use checkboxes of strings for genres -->
       <!-- Maybe use first letter for title? -->
 
-      <!-- eslint-disable-next-line vue/valid-v-slot -->
-      <template v-slot:item.title="{ item }">
+      <template #[`item.title`]="{ item }">
         <!-- Account for very long titles -->
         <TruncatedField :text="item.title" width="300"></TruncatedField>
       </template>
 
-      <!-- eslint-disable-next-line vue/valid-v-slot -->
-      <template v-slot:item.rated="{ item }">
-        <v-card flat>
-          <!-- Account for "APPROVED" ratings being wide -->
-          <v-card-text style="width: 110px">{{ item.rated }}</v-card-text>
-        </v-card>
+      <template #[`item.rated`]="{ item }">
+        <!-- Account for "APPROVED" ratings being wide -->
+        <TruncatedField :text="item.rated" width="110"></TruncatedField>
       </template>
 
-      <!-- eslint-disable-next-line vue/valid-v-slot -->
-      <template v-slot:item.genres="{ item }">
+      <template #[`item.genres`]="{ item }">
         <!-- Account for the genre lists being long -->
         <TruncatedField :text="item.genres" width="200"></TruncatedField>
       </template>
 
-      <!-- eslint-disable-next-line vue/valid-v-slot -->
-      <template v-slot:item.poster="{ item }">
-        <v-card class="my-2" elevation="1" rounded>
-          <v-img :src="`${item.poster}`" height="64" cover></v-img>
-        </v-card>
+      <template #[`item.poster`]="{ item }">
+        <PosterImage :poster="item.poster"></PosterImage>
       </template>
     </v-data-table>
   </v-card>

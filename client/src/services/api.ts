@@ -2,54 +2,54 @@ import axios from 'axios'
 const API_URL = 'http://localhost:3000/api/'
 
 export interface Movie {
-  _id: String
+  _id: string
   awards: {
-    nominations: Number
-    text: String
-    wins: Number
+    nominations: number
+    text: string
+    wins: number
   }
-  cast: Array<String>
-  countries: Array<String>
-  directors: Array<String>
-  fullPlot?: String
+  cast: Array<string>
+  countries: Array<string>
+  directors: Array<string>
+  fullPlot?: string
   genres: Array<string>
   imdb: {
-    id: Number
-    rating: Number
-    votes: Number
+    id: number
+    rating: number
+    votes: number
   }
-  languages: Array<String>
-  lastupdated: String
-  num_mflix_comments: Number
-  plot: String
-  poster?: String
-  rated?: String
+  languages: Array<string>
+  lastupdated: string
+  num_mflix_comments: number
+  plot: string
+  poster?: string
+  rated?: string
   released: Date
-  runtime: Number
+  runtime: number
   title: string
   tomatoes: {
-    boxOffice?: String
-    consensus?: String
+    boxOffice?: string
+    consensus?: string
     critic?: {
-      meter: Number
-      numReviews: Number
-      rating: Number
+      meter: number
+      numReviews: number
+      rating: number
     }
     dvd?: Date
-    fresh?: Number
+    fresh?: number
     lastUpdated: Date
-    production?: String
-    rotten?: Number
+    production?: string
+    rotten?: number
     viewer: {
-      meter: Number
-      numReviews: Number
-      rating: Number
+      meter: number
+      numReviews: number
+      rating: number
     }
     website?: string
   }
   type: 'movie'
-  writers: Array<String>
-  year: Number
+  writers: Array<string>
+  year: number
 }
 
 export async function getAllMovies(): Promise<Movie[] | null> {
@@ -79,5 +79,14 @@ export async function getMovieById(id: string): Promise<Movie | null> {
   } catch (error) {
     console.error(error)
     return null
+  }
+}
+
+export async function getMaxRuntime() {
+  try {
+    const response = await axios.get(API_URL + 'movies/aggregate/runtime')
+    console.log('aggregate', response.data)
+  } catch (error) {
+    console.error(error)
   }
 }

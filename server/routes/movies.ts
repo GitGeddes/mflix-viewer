@@ -46,4 +46,21 @@ router.get("/:id", async function (req, res, next) {
   else res.send(result).status(200);
 });
 
+router.get("/aggregate/runtime", async function (req, res, next) {
+  let collection = await db.collection("movies");
+  console.log("requesting max and min");
+  let max = await collection.find().sort({ runtime: -1 }).limit(1).toArray();
+  let min = await collection.find().sort({ runtime: 1 }).limit(1).toArray();
+  // let query = {
+  //   $group: {
+  //     _id: "$runtime",
+  //     maxRuntime: { $max: "$runtime" },
+  //     minRuntime: { $min: "$runtime" },
+  //   },
+  // };
+  // let aggregate = await collection.aggregate([query]);
+  console.log("max and min", max, min);
+  return { max: max, min: min };
+});
+
 export default router;
