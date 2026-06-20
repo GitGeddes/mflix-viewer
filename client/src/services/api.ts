@@ -53,33 +53,15 @@ export interface Movie {
 }
 
 export async function getAllMovies(): Promise<Movie[] | null> {
-  try {
-    const response = await axios.get(API_URL + 'movies')
-    return response.data
-  } catch (error) {
-    console.error(error)
-    return null
-  }
+  return requestFactory<Movie[]>(API_URL + 'movies')
 }
 
 export async function getMoviesByPage(page: number): Promise<Movie[] | null> {
-  try {
-    const response = await axios.get(API_URL + `movies/page/${page}`)
-    return response.data
-  } catch (error) {
-    console.error(error)
-    return null
-  }
+  return requestFactory<Movie[]>(API_URL + `movies/page/${page}`)
 }
 
 export async function getMovieById(id: string): Promise<Movie | null> {
-  try {
-    const response = await axios.get(API_URL + `movies/${id}`)
-    return response.data
-  } catch (error) {
-    console.error(error)
-    return null
-  }
+  return requestFactory<Movie>(API_URL + `movies/${id}`)
 }
 
 export async function getMaxRuntime() {
@@ -88,5 +70,15 @@ export async function getMaxRuntime() {
     console.log('aggregate', response.data)
   } catch (error) {
     console.error(error)
+  }
+}
+
+async function requestFactory<T>(url: string): Promise<T | null> {
+  try {
+    const response = await axios.get(url)
+    return response.data
+  } catch (error) {
+    console.error(error)
+    return null
   }
 }
