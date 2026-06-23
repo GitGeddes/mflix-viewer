@@ -10,6 +10,9 @@ import { onMounted, ref, type Ref } from 'vue'
 import { VCard } from 'vuetify/components'
 import TruncatedField from './TruncatedField.vue'
 import PosterImage from './PosterImage.vue'
+import { useRouter } from 'vue-router'
+
+const router = useRouter()
 
 // Search query
 const search = ref('')
@@ -67,6 +70,13 @@ async function onClickDistinct() {
   const thingy = await getDistinctRateds()
   console.log('thingy', thingy)
 }
+
+function clickRow(event, row) {
+  console.log('row clicked', row.item._id)
+  // TODO: Pass the movie as parameters to the individual movie page
+  // router.push({ path: '/movies/' + row.item._id, params: row.item })
+  router.push('/movies/' + row.item._id)
+}
 </script>
 
 <template>
@@ -79,6 +89,7 @@ async function onClickDistinct() {
       :items="movies"
       :search="search"
       :loading="isLoading"
+      @click:row="clickRow"
       loading-text="Loading Movies"
     >
       <template v-slot:top>

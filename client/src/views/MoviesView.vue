@@ -3,7 +3,5 @@ import MoviesTable from '@/components/MoviesTable.vue'
 </script>
 
 <template>
-  <main>
-    <MoviesTable></MoviesTable>
-  </main>
+  <MoviesTable></MoviesTable>
 </template>
