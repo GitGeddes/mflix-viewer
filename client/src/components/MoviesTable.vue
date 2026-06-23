@@ -1,5 +1,11 @@
 <script setup lang="ts">
-import { getAllMovies, getMaxRuntime, getMaxRuntimeByType, type Movie } from '@/services/api'
+import {
+  getAllMovies,
+  getDistinctRateds,
+  getMaxRuntime,
+  getMaxRuntimeByType,
+  type Movie,
+} from '@/services/api'
 import { onMounted, ref, type Ref } from 'vue'
 import { VCard } from 'vuetify/components'
 import TruncatedField from './TruncatedField.vue'
@@ -40,7 +46,6 @@ function getMovies() {
   })
 }
 
-// Search the data table by the title.
 function searchFilter(value: string | null, query: string | null) {
   return (
     value != null &&
@@ -57,22 +62,24 @@ function onClick() {
 function onClickByType() {
   getMaxRuntimeByType()
 }
+
+async function onClickDistinct() {
+  const thingy = await getDistinctRateds()
+  console.log('thingy', thingy)
+}
 </script>
 
 <template>
   <v-btn @click="onClick">Get Max Runtime</v-btn>
   <v-btn @click="onClickByType">Get Max Runtime by Type</v-btn>
+  <v-btn @click="onClickDistinct">Get distinct rateds</v-btn>
   <v-card title="Movies" flat data-testid="title">
     <v-data-table
       :headers="headers"
       :items="movies"
       :search="search"
-      :custom-filter="searchFilter"
       :loading="isLoading"
       loading-text="Loading Movies"
-      sort-asc-icon="mdi-sort-ascending"
-      sort-desc-icon="mdi-sort-descending"
-      sort-icon="mdi-swap-vertical"
     >
       <template v-slot:top>
         <v-text-field
@@ -96,7 +103,7 @@ function onClickByType() {
       </template>
 
       <template #[`item.rated`]="{ item }">
-        <!-- Account for "APPROVED" ratings being wide -->
+        <!-- Account for "APPROVED" ratings being very wide -->
         <TruncatedField :text="item.rated" width="110"></TruncatedField>
       </template>
 
