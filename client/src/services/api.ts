@@ -65,12 +65,15 @@ export async function getMovieById(id: string): Promise<Movie | null> {
 }
 
 export async function getMaxRuntime() {
-  try {
-    const response = await axios.get(API_URL + 'movies/aggregate/runtime')
-    console.log('aggregate', response.data)
-  } catch (error) {
-    console.error(error)
-  }
+  const response = requestFactory(API_URL + 'movies/aggregate/runtime')
+  console.log('aggregate on client', await response)
+  return response
+}
+
+export async function getMaxRuntimeByType() {
+  const response = requestFactory(API_URL + 'movies/aggregate/runtimeByType')
+  console.log('aggregate on client', await response)
+  return response
 }
 
 async function requestFactory<T>(url: string): Promise<T | null> {

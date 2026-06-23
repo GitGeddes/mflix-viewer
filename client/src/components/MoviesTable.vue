@@ -1,5 +1,5 @@
 <script setup lang="ts">
-import { getAllMovies, getMaxRuntime, type Movie } from '@/services/api'
+import { getAllMovies, getMaxRuntime, getMaxRuntimeByType, type Movie } from '@/services/api'
 import { onMounted, ref, type Ref } from 'vue'
 import { VCard } from 'vuetify/components'
 import TruncatedField from './TruncatedField.vue'
@@ -53,10 +53,15 @@ function searchFilter(value: string | null, query: string | null) {
 function onClick() {
   getMaxRuntime()
 }
+
+function onClickByType() {
+  getMaxRuntimeByType()
+}
 </script>
 
 <template>
   <v-btn @click="onClick">Get Max Runtime</v-btn>
+  <v-btn @click="onClickByType">Get Max Runtime by Type</v-btn>
   <v-card title="Movies" flat data-testid="title">
     <v-data-table
       :headers="headers"
