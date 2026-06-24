@@ -1,4 +1,5 @@
 <script setup lang="ts">
+import router from '@/router'
 import {
   getSelfUser,
   postLogout,
@@ -22,11 +23,12 @@ async function fetchSelfUser() {
 
 async function onClickLogout() {
   postLogout().then((res) => {
-    console.log('logout result', res)
     if (res.ok) {
       // Delete the saved token because it is now invalid
       localStorage.removeItem(TOKEN_LOCAL_STORAGE_KEY)
       user.value = undefined
+      // Navigate back to the home page
+      router.push('/')
     }
   })
 }
