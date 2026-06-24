@@ -14,7 +14,7 @@ var router = express.Router()
 router.get('/', async function (req, res, next) {
   let collection = await db.collection('movies')
   let results = await collection.find().sort(SORT_TITLE).toArray()
-  res.send(results).status(200)
+  res.status(200).send(results)
 })
 
 // TODO: Pagination is unused
@@ -27,7 +27,7 @@ router.get('/page/:page', async function (req, res, next) {
 
   let collection = await db.collection('movies')
   let results = await collection.find().sort(SORT_TITLE).limit(PAGE_LIMIT).skip(offset).toArray()
-  res.send(results).status(200)
+  res.status(200).send(results)
 })
 
 /** GET movie by id. */
@@ -36,8 +36,8 @@ router.get('/:id', async function (req, res, next) {
   // Match by the requested ID
   let query = { _id: new ObjectId(req.params.id) }
   let result = await collection.findOne(query)
-  if (!result) res.send('Movie not found').status(404)
-  else res.send(result).status(200)
+  if (!result) res.status(404).send('Movie not found')
+  else res.status(200).send(result)
 })
 
 /** GET maximum and minimum of the runtime across the Movies collection */
@@ -51,7 +51,7 @@ router.get('/aggregate/runtime', async function (req, res, next) {
     },
   }
   let aggregate = await collection.aggregate([query]).toArray()
-  res.send(aggregate[0]).status(200)
+  res.status(200).send(aggregate[0])
 })
 
 /** GET maximum and minimum of the runtime across the Movies collection, grouped by type */
@@ -80,14 +80,26 @@ router.get('/aggregate/runtimeByType', async function (req, res, next) {
       prev[Object.keys(curr)[0]] = Object.values(curr)[0]
       return prev
     })
-  res.send(minMaxObj).status(200)
+  res.status(200).send(minMaxObj)
 })
 
 /** GET all distinct values for the Rated field */
 router.get('/aggregate/rated', async function (req, res, next) {
   let collection = db.collection('movies')
   const cursor = await collection.distinct('rated')
-  res.send(cursor).status(200)
+  res.status(200).send(cursor)
+})
+
+/** GET all distinct values for the Genres field */
+router.get('/aggregate/genre', async function (req, res, next) {
+  let collection = db.collection('movies')
+  const aggregate = await collection
+    .aggregate([
+      { $unwind: '$genres' },
+      { $group: { _id: null, distinctGenres: { $addToSet: '$genres' } } },
+    ])
+    .toArray()
+  res.status(200).send(aggregate[0].distinctGenres)
 })
 
 export default router

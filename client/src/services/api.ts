@@ -112,6 +112,10 @@ export async function getMaxRuntimeByType() {
 export async function getDistinctRateds() {
   return getRequestFactory(API_URL + 'movies/aggregate/rated')
 }
+
+export async function getDistinctGenres() {
+  return getRequestFactory(API_URL + 'movies/aggregate/genre')
+}
 //#endregion
 
 //#region User API

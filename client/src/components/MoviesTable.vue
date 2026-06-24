@@ -1,6 +1,7 @@
 <script setup lang="ts">
 import {
   getAllMovies,
+  getDistinctGenres,
   getDistinctRateds,
   getMaxRuntime,
   getMaxRuntimeByType,
@@ -22,6 +23,7 @@ const headers = [
   { key: 'year', title: 'Year' },
   { key: 'runtime', title: 'Runtime' },
   { key: 'rated', title: 'Rated' },
+  { key: 'type', title: 'Type' },
   { key: 'genres', title: 'Genres' },
   { key: 'imdb.rating', title: 'IMDB Rating' },
   { key: 'poster', title: 'Poster' },
@@ -49,13 +51,8 @@ function getMovies() {
   })
 }
 
-function searchFilter(value: string | null, query: string | null) {
-  return (
-    value != null &&
-    query != null &&
-    typeof value === 'string' &&
-    value.toString().indexOf(query) !== -1
-  )
+function searchFilter(value: string, query: string) {
+  return value.indexOf(query) !== -1
 }
 
 function onClick() {
@@ -71,6 +68,10 @@ async function onClickDistinct() {
   console.log('thingy', thingy)
 }
 
+async function onClickGetDistinctGenres() {
+  await getDistinctGenres()
+}
+
 function clickRow(event, row) {
   console.log('row clicked', row.item._id)
   // TODO: Pass the movie as parameters to the individual movie page
@@ -83,12 +84,14 @@ function clickRow(event, row) {
   <v-btn @click="onClick">Get Max Runtime</v-btn>
   <v-btn @click="onClickByType">Get Max Runtime by Type</v-btn>
   <v-btn @click="onClickDistinct">Get distinct rateds</v-btn>
+  <v-btn @click="onClickGetDistinctGenres">Get distinct genres</v-btn>
   <v-card title="Movies" flat data-testid="title">
     <v-data-table
       :headers="headers"
       :items="movies"
       :search="search"
       :loading="isLoading"
+      :filter-keys="['title']"
       @click:row="clickRow"
       loading-text="Loading Movies"
     >
@@ -120,7 +123,7 @@ function clickRow(event, row) {
 
       <template #[`item.genres`]="{ item }">
         <!-- Account for the genre lists being long -->
-        <TruncatedField :text="item.genres" width="200"></TruncatedField>
+        <TruncatedField :text="item.genres.join(', ')" width="200"></TruncatedField>
       </template>
 
       <template #[`item.poster`]="{ item }">
