@@ -4,10 +4,12 @@ import TitleBar from './components/TitleBar.vue'
 </script>
 
 <template>
-  <!-- Header -->
-  <TitleBar></TitleBar>
-  <!-- Body -->
-  <main>
-    <RouterView />
-  </main>
+  <v-app>
+    <!-- Header -->
+    <TitleBar></TitleBar>
+    <!-- Body -->
+    <v-main>
+      <RouterView />
+    </v-main>
+  </v-app>
 </template>
