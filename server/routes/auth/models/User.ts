@@ -1,4 +1,5 @@
 // Mostly AI coded
+import bcrypt from 'bcrypt'
 import mongoose, { Schema } from 'mongoose'
 
 const UserSchema = new Schema(
@@ -32,9 +33,18 @@ const UserSchema = new Schema(
 
 // Middleware to validate password hash when saving the document
 UserSchema.pre('save', function () {
-  if (!this.password || this.isModified('password')) {
-    throw new Error('Password hash must be set externally')
-  }
+  const user = this
+
+  if (!user.isModified('password')) return
+  bcrypt.genSalt(10, (err, salt) => {
+    if (err) return
+
+    bcrypt.hash(user.password, salt, (err, hash) => {
+      if (err) return
+
+      user.password = hash
+    })
+  })
 })
 
 export default mongoose.model('User', UserSchema)

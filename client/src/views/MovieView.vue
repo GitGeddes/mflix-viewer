@@ -9,14 +9,12 @@ const route = useRoute()
 const movieId: string = route.params.movieId as string
 const movie: Ref<Movie | undefined> = ref()
 onMounted(() => {
-  console.log('movie id', movieId)
   getMovie()
 })
 
 // TODO: Pass the movie as a prop from the table
 async function getMovie() {
   movie.value = (await getMovieById(movieId))!
-  console.log('reee', movie.value)
 }
 </script>
 

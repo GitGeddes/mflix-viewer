@@ -4,6 +4,8 @@ import db from '../src/dbConnection.ts'
 import express from 'express'
 import bcrypt from 'bcrypt'
 import jwt from 'jsonwebtoken'
+import { authenticateToken } from './auth/middleware/authMiddleware.ts'
+import { ObjectId } from 'mongodb'
 
 const secret: string = process.env.JWT_TOKEN!
 
@@ -73,28 +75,62 @@ router.post('/login', async function (req, res) {
       })
       .status(200)
   } catch (error) {
-    res.status(500).json({ error: 'Server error' })
+    res.status(500).json({ error: 'Internal server error' })
+  }
+})
+
+// Middleware
+// Must be used after the createUser and login endpoints.
+router.use(async function (req, res, next) {
+  await authenticateToken(req, res, next)
+})
+
+router.post('/me', async function (req, res) {
+  let collection = await db.collection('users')
+  try {
+    // The user should be added by the middleware if the token is valid
+    const query = { _id: new ObjectId(req.user.userId) }
+    const user = await collection.findOne(query)
+
+    res.status(200).json({ user: user })
+  } catch (error) {
+    res.status(500).json({ error: 'Internal server error' })
   }
 })
 
 router.post('/user', async function (req, res) {
+  const { userID } = req.body
+  let collection = await db.collection('users')
+  try {
+    const query = { _id: new ObjectId(userID) }
+    const user = await collection.findOne(query)
+
+    res.status(200).json({ user: user })
+  } catch (error) {
+    res.status(500).json({ error: 'Internal server error' })
+  }
+})
+
+router.post('/logout', async function (req, res) {
   const authHeader = req.headers['authorization']
   const token = authHeader && authHeader.split(' ')[1]
-  console.log('reeee', token)
+  let collection = await db.collection('token_denylist')
 
-  if (!token) {
-    return res.status(401).json({ message: 'Token missing' })
+  try {
+    // Make sure only the current user can invalidate their own tokens
+    const denyEntry = await collection.insertOne({
+      token: token,
+      exp: req.user.exp, // Save expiration timestamps to potentially delete later
+    })
+    console.log('session id', req.session.id, denyEntry.insertedId)
+    req.session.destroy(() => {
+      console.log('session destroyed')
+    })
+    res.status(200).json({ message: 'You are logged out!', ok: true })
+  } catch (error) {
+    // User already exists
+    res.status(500).send({ error: 'Internal server error' })
   }
-
-  jwt.verify(token, process.env.JWT_TOKEN!, (err, decoded) => {
-    if (err) {
-      return res.status(403).json({ message: 'Invalid or expired token' })
-    }
-
-    // req.user = decoded
-    console.log('decoded user?', decoded)
-    res.status(200).json({ user: decoded })
-  })
 })
 
 export default router

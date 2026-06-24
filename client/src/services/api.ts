@@ -2,6 +2,8 @@ import axios from 'axios'
 const BASE_URL = 'http://localhost:3000'
 const API_URL = 'http://localhost:3000/api/'
 
+export const TOKEN_LOCAL_STORAGE_KEY = 'access_token'
+
 export interface Movie {
   _id: string
   awards: {
@@ -53,6 +55,56 @@ export interface Movie {
   year: number
 }
 
+const api = axios.create({ baseURL: BASE_URL })
+
+api.interceptors.request.use((config) => {
+  const token = localStorage.getItem(TOKEN_LOCAL_STORAGE_KEY)
+  if (token) {
+    config.headers.set('Authorization', `Bearer ${token}`)
+  }
+  return config
+})
+
+// Movie endpoints
+export async function getAllMovies(): Promise<Movie[] | null> {
+  return getRequestFactory<Movie[]>(API_URL + 'movies')
+}
+
+export async function getMoviesByPage(page: number): Promise<Movie[] | null> {
+  return getRequestFactory<Movie[]>(API_URL + `movies/page/${page}`)
+}
+
+export async function getMovieById(id: string): Promise<Movie | null> {
+  return getRequestFactory<Movie>(API_URL + `movies/${id}`)
+}
+
+export async function getMaxRuntime() {
+  return getRequestFactory(API_URL + 'movies/aggregate/runtime')
+}
+
+export async function getMaxRuntimeByType() {
+  return getRequestFactory(API_URL + 'movies/aggregate/runtimeByType')
+}
+
+export async function getDistinctRateds() {
+  return getRequestFactory(API_URL + 'movies/aggregate/rated')
+}
+
+interface WithDocumentId {
+  _id: string
+}
+
+export interface UserInterface {
+  displayname?: string
+  username: string
+  email: string
+  password: string
+}
+
+interface UserDocument {
+  user: UserInterface & WithDocumentId
+}
+
 interface LoginBody {
   email: string
   password: string
@@ -78,40 +130,7 @@ interface GetUserBody {
   userID: string
 }
 
-const api = axios.create({ baseURL: BASE_URL })
-
-api.interceptors.request.use((config) => {
-  const token = localStorage.getItem('access_token')
-  if (token) {
-    config.headers.set('Authorization', `Bearer ${token}`)
-  }
-  return config
-})
-
-export async function getAllMovies(): Promise<Movie[] | null> {
-  return getRequestFactory<Movie[]>(API_URL + 'movies')
-}
-
-export async function getMoviesByPage(page: number): Promise<Movie[] | null> {
-  return getRequestFactory<Movie[]>(API_URL + `movies/page/${page}`)
-}
-
-export async function getMovieById(id: string): Promise<Movie | null> {
-  return getRequestFactory<Movie>(API_URL + `movies/${id}`)
-}
-
-export async function getMaxRuntime() {
-  return getRequestFactory(API_URL + 'movies/aggregate/runtime')
-}
-
-export async function getMaxRuntimeByType() {
-  return getRequestFactory(API_URL + 'movies/aggregate/runtimeByType')
-}
-
-export async function getDistinctRateds() {
-  return getRequestFactory(API_URL + 'movies/aggregate/rated')
-}
-
+// User endpoints
 export async function postCreateUser(body: CreateUserBody) {
   return postRequestFactory<CreateUserBody, unknown>(API_URL + 'user/createUser', body)
 }
@@ -119,17 +138,22 @@ export async function postCreateUser(body: CreateUserBody) {
 export async function postLogin(body: LoginBody) {
   const response = await postRequestFactory<LoginBody, LoginResponse>(API_URL + 'user/login', body)
   if (response) {
-    localStorage.setItem('access_token', response.token)
+    localStorage.setItem(TOKEN_LOCAL_STORAGE_KEY, response.token)
   }
   return response
 }
 
+export async function getSelfUser() {
+  return postRequestFactory<undefined, UserDocument>(API_URL + 'user/me', undefined)
+}
+
 export async function postGetUser(body: GetUserBody) {
-  const response = await postRequestFactory<GetUserBody, unknown>(API_URL + 'user/user', body)
-  if (response) {
-    console.log('get user response', response)
-  }
+  const response = await postRequestFactory<GetUserBody, UserDocument>(API_URL + 'user/user', body)
   return response
+}
+
+export async function postLogout() {
+  return postRequestFactory<undefined, unknown>(API_URL + 'user/logout', undefined)
 }
 
 async function getRequestFactory<T>(url: string): Promise<T | null> {
@@ -137,7 +161,7 @@ async function getRequestFactory<T>(url: string): Promise<T | null> {
     const response = await api.get(url)
     return response.data
   } catch (error) {
-    console.error(error)
+    console.error('Error in GET request:', error)
     return null
   }
 }

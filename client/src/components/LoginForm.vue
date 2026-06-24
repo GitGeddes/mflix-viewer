@@ -1,5 +1,5 @@
 <script setup lang="ts">
-import { postCreateUser, postGetUser, postLogin } from '@/services/api'
+import { getSelfUser, postCreateUser, postGetUser, postLogin } from '@/services/api'
 import { ref } from 'vue'
 
 const email = ref('')
@@ -20,10 +20,7 @@ async function onClickCreate() {
 }
 
 async function onClickGetUser() {
-  const response = await postGetUser({
-    userID: '6a3b64ead43f3eedf7609400',
-  })
-  console.log('get user responseeeee', response)
+  await getSelfUser()
 }
 
 async function onClickSubmit() {
@@ -31,7 +28,14 @@ async function onClickSubmit() {
     email: email.value,
     password: password.value,
   })
-  console.log('login response', response)
+  if (response) {
+    console.log('login response', response)
+  }
+}
+
+async function onClickGetOtherUser() {
+  const response = await postGetUser({ userID: '6a3ba24a640c06e72aa50898' })
+  console.log('other user', response)
 }
 </script>
 
@@ -40,6 +44,7 @@ async function onClickSubmit() {
   <v-btn @click="onClickLogin">Test login</v-btn>
   <v-btn @click="onClickCreate">Test create user</v-btn>
   <v-btn @click="onClickGetUser">Get user with auth</v-btn>
+  <v-btn @click="onClickGetOtherUser">Get other user with auth</v-btn>
   <v-form>
     <v-text-field v-model="email" type="email" label="Email"></v-text-field>
     <v-text-field v-model="password" type="password" label="Password"></v-text-field>
