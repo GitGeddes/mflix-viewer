@@ -4,7 +4,6 @@ import {
   getDistinctGenres,
   getDistinctRateds,
   getMaxRuntime,
-  getMaxRuntimeByType,
   type Movie,
 } from '@/services/api'
 import { onMounted, ref, type Ref } from 'vue'
@@ -17,6 +16,22 @@ const router = useRouter()
 
 // Search query
 const search = ref('')
+// Year slider
+const yearFilter = ref([0, 0])
+const yearFilterOptions = ref([0, 0])
+// Runtime slider
+const runtimeFilter = ref([0, 0])
+const runtimeFilterOptions = ref([0, 0])
+// Rated array
+const ratedFilter: Ref<string[]> = ref([])
+const ratedFilterOptions: Ref<string[]> = ref([])
+// Genre array
+const genreFilter: Ref<string[]> = ref([])
+const genreFilterOptions: Ref<string[]> = ref([])
+// IMDB rating slider
+const imdbFilter = ref([0, 0])
+const imdbFilterOptions = ref([0, 0])
+
 // Headers for the data table
 const headers = [
   { key: 'title', title: 'Title' },
@@ -38,6 +53,15 @@ const isLoading = ref(true)
 onMounted(() => {
   getMovies()
 })
+
+onMounted(() => {
+  // Populate all filter fields
+  getYearRange()
+  getRatedRange()
+  getRuntimeRange()
+  getIMDBRange()
+  getAllGenres()
+})
 // Get all of the movies and update the data table.
 function getMovies() {
   getAllMovies().then((res) => {
@@ -51,25 +75,34 @@ function getMovies() {
   })
 }
 
-function searchFilter(value: string, query: string) {
-  return value.indexOf(query) !== -1
-}
-
-function onClick() {
-  getMaxRuntime()
-}
-
-function onClickByType() {
-  getMaxRuntimeByType()
+function searchFilter(value: string, query: string, item) {
+  const genreIntersection = genreFilter.value.filter((el) => item.genres.includes(el)).length > 0
+  return value.indexOf(query) !== -1 && genreIntersection
 }
 
 async function onClickDistinct() {
-  const thingy = await getDistinctRateds()
-  console.log('thingy', thingy)
+  await getDistinctRateds()
 }
 
-async function onClickGetDistinctGenres() {
-  await getDistinctGenres()
+async function getYearRange() {}
+
+async function getRatedRange() {}
+
+async function getRuntimeRange() {
+  const result = await getMaxRuntime()
+  if (result) {
+    runtimeFilterOptions.value = [result.minRuntime, result.maxRuntime]
+    runtimeFilter.value = runtimeFilterOptions.value
+  }
+}
+
+async function getIMDBRange() {}
+
+async function getAllGenres() {
+  const result = await getDistinctGenres()
+  if (result) {
+    genreFilterOptions.value = result.sort()
+  }
 }
 
 function clickRow(event, row) {
@@ -81,10 +114,36 @@ function clickRow(event, row) {
 </script>
 
 <template>
-  <v-btn @click="onClick">Get Max Runtime</v-btn>
-  <v-btn @click="onClickByType">Get Max Runtime by Type</v-btn>
-  <v-btn @click="onClickDistinct">Get distinct rateds</v-btn>
-  <v-btn @click="onClickGetDistinctGenres">Get distinct genres</v-btn>
+  <!-- Year filter -->
+  <v-card-text>
+    <h4>Choose Year range</h4>
+  </v-card-text>
+  <!-- Rated filter -->
+  <v-card-text>
+    <h4>Choose Rated options</h4>
+  </v-card-text>
+  <!-- Runtime filter -->
+  <v-card-text>
+    <h4>Choose runtime range</h4>
+    <v-range-slider
+      v-model="runtimeFilter"
+      :max="runtimeFilterOptions[1]"
+      :min="runtimeFilterOptions[0]"
+      step="1"
+      thumb-label="hover"
+    ></v-range-slider>
+  </v-card-text>
+  <!-- Genre filters -->
+  <v-card-text>
+    <h4>Choose genres</h4>
+    <v-chip-group v-model="genreFilter" column multiple>
+      <v-chip v-for="genre in genreFilterOptions" :key="genre" :text="genre"></v-chip>
+    </v-chip-group>
+  </v-card-text>
+  <!-- IMDB Rating filter -->
+  <v-card-text>
+    <h4>Choose IMDB Rating range</h4>
+  </v-card-text>
   <v-card title="Movies" flat data-testid="title">
     <v-data-table
       :headers="headers"

@@ -95,7 +95,7 @@ router.get('/aggregate/genre', async function (req, res, next) {
   let collection = db.collection('movies')
   const aggregate = await collection
     .aggregate([
-      { $unwind: '$genres' },
+      { $unwind: '$genres' }, // Unwind nested genre array
       { $group: { _id: null, distinctGenres: { $addToSet: '$genres' } } },
     ])
     .toArray()

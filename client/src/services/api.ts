@@ -101,7 +101,11 @@ export async function getMovieById(id: string): Promise<Movie | null> {
   return getRequestFactory<Movie>(API_URL + `movies/${id}`)
 }
 
-export async function getMaxRuntime() {
+export async function getMaxRuntime(): Promise<{
+  _id: Object
+  maxRuntime: number
+  minRuntime: number
+} | null> {
   return getRequestFactory(API_URL + 'movies/aggregate/runtime')
 }
 
@@ -113,7 +117,7 @@ export async function getDistinctRateds() {
   return getRequestFactory(API_URL + 'movies/aggregate/rated')
 }
 
-export async function getDistinctGenres() {
+export async function getDistinctGenres(): Promise<string[] | null> {
   return getRequestFactory(API_URL + 'movies/aggregate/genre')
 }
 //#endregion
