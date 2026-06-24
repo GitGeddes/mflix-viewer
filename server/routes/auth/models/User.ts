@@ -3,6 +3,11 @@ import mongoose, { Schema } from 'mongoose'
 
 const UserSchema = new Schema(
   {
+    displayname: {
+      type: String,
+      required: true,
+      unique: false,
+    },
     username: {
       type: String,
       required: true,
@@ -17,22 +22,9 @@ const UserSchema = new Schema(
       unique: true,
       lowercase: true,
     },
-    passwordHash: {
+    password: {
       type: String,
       required: true,
-    },
-    resetPasswordToken: {
-      type: String,
-      sparse: true,
-    },
-    resetPasswordExpires: {
-      type: Date,
-      sparse: true,
-    },
-    status: {
-      type: String,
-      enum: ['active', 'suspended'],
-      default: 'active',
     },
   },
   { timestamps: true },
@@ -40,7 +32,7 @@ const UserSchema = new Schema(
 
 // Middleware to validate password hash when saving the document
 UserSchema.pre('save', function () {
-  if (!this.passwordHash || this.isModified('passwordHash')) {
+  if (!this.password || this.isModified('password')) {
     throw new Error('Password hash must be set externally')
   }
 })

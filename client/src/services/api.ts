@@ -1,4 +1,5 @@
 import axios from 'axios'
+const BASE_URL = 'http://localhost:3000'
 const API_URL = 'http://localhost:3000/api/'
 
 export interface Movie {
@@ -52,36 +53,101 @@ export interface Movie {
   year: number
 }
 
+interface LoginBody {
+  email: string
+  password: string
+}
+
+interface LoginResponse {
+  token: string
+  expiresIn: string
+  user: {
+    email: string
+    id: string
+  }
+}
+
+interface CreateUserBody {
+  displayname?: string
+  username: string
+  email: string
+  password: string
+}
+
+interface GetUserBody {
+  userID: string
+}
+
+const api = axios.create({ baseURL: BASE_URL })
+
+api.interceptors.request.use((config) => {
+  const token = localStorage.getItem('access_token')
+  if (token) {
+    config.headers.set('Authorization', `Bearer ${token}`)
+  }
+  return config
+})
+
 export async function getAllMovies(): Promise<Movie[] | null> {
-  return requestFactory<Movie[]>(API_URL + 'movies')
+  return getRequestFactory<Movie[]>(API_URL + 'movies')
 }
 
 export async function getMoviesByPage(page: number): Promise<Movie[] | null> {
-  return requestFactory<Movie[]>(API_URL + `movies/page/${page}`)
+  return getRequestFactory<Movie[]>(API_URL + `movies/page/${page}`)
 }
 
 export async function getMovieById(id: string): Promise<Movie | null> {
-  return requestFactory<Movie>(API_URL + `movies/${id}`)
+  return getRequestFactory<Movie>(API_URL + `movies/${id}`)
 }
 
 export async function getMaxRuntime() {
-  return requestFactory(API_URL + 'movies/aggregate/runtime')
+  return getRequestFactory(API_URL + 'movies/aggregate/runtime')
 }
 
 export async function getMaxRuntimeByType() {
-  return requestFactory(API_URL + 'movies/aggregate/runtimeByType')
+  return getRequestFactory(API_URL + 'movies/aggregate/runtimeByType')
 }
 
 export async function getDistinctRateds() {
-  return requestFactory(API_URL + 'movies/aggregate/rated')
+  return getRequestFactory(API_URL + 'movies/aggregate/rated')
 }
 
-async function requestFactory<T>(url: string): Promise<T | null> {
+export async function postCreateUser(body: CreateUserBody) {
+  return postRequestFactory<CreateUserBody, unknown>(API_URL + 'user/createUser', body)
+}
+
+export async function postLogin(body: LoginBody) {
+  const response = await postRequestFactory<LoginBody, LoginResponse>(API_URL + 'user/login', body)
+  if (response) {
+    localStorage.setItem('access_token', response.token)
+  }
+  return response
+}
+
+export async function postGetUser(body: GetUserBody) {
+  const response = await postRequestFactory<GetUserBody, unknown>(API_URL + 'user/user', body)
+  if (response) {
+    console.log('get user response', response)
+  }
+  return response
+}
+
+async function getRequestFactory<T>(url: string): Promise<T | null> {
   try {
-    const response = await axios.get(url)
+    const response = await api.get(url)
     return response.data
   } catch (error) {
     console.error(error)
+    return null
+  }
+}
+
+async function postRequestFactory<T, V>(url: string, body: T): Promise<V | null> {
+  try {
+    const response = await api.post(url, body)
+    return response.data
+  } catch (error) {
+    console.error('Error in POST request:', error)
     return null
   }
 }
