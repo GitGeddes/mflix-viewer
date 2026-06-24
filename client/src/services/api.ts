@@ -224,7 +224,7 @@ export async function postAddToWatchlist(body: AddToWatchlistBody) {
 }
 
 interface FetchWatchlistResult {
-  watchlist: { _id: string; movies: Movie[] } | null
+  watchlist: { _id: string; movies: string[] } | null
 }
 export async function getWatchlist() {
   return getRequestFactory<FetchWatchlistResult>(API_URL + 'user/watchlist')
@@ -234,6 +234,6 @@ interface FetchMoviesBody {
   movies: string[] // Movie IDs
 }
 export async function postFetchMovies(body: FetchMoviesBody) {
-  return postRequestFactory<FetchMoviesBody, unknown>(API_URL + 'movies/', body)
+  return postRequestFactory<FetchMoviesBody, { movies: Movie[] }>(API_URL + 'movies/', body)
 }
 //#endregion

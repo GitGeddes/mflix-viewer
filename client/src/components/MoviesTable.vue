@@ -109,7 +109,9 @@ async function getIMDBRange() {
   const result = await getImdbRatingRange()
   console.log('imdb', result)
   if (result) {
-    imdbFilterOptions.value = [result.minIMDBRating, result.maxIMDBRating]
+    // Some entries don't parse correctly into a number, force the range to be 0-10
+    // imdbFilterOptions.value = [result.minIMDBRating, result.maxIMDBRating]
+    imdbFilterOptions.value = [0, 10]
     imdbFilter.value = imdbFilterOptions.value
   }
 }
@@ -130,53 +132,55 @@ function clickRow(event, row) {
 </script>
 
 <template>
-  <!-- Year filter -->
-  <v-card-text>
-    <h4>Choose Year range</h4>
-    <v-range-slider
-      v-model="yearFilter"
-      :max="yearFilterOptions[1]"
-      :min="yearFilterOptions[0]"
-      step="1"
-      thumb-label="hover"
-    ></v-range-slider>
-  </v-card-text>
+  <v-row>
+    <!-- Year filter -->
+    <v-col cols="4" class="px-4">
+      <h4>Choose Year range</h4>
+      <v-range-slider
+        v-model="yearFilter"
+        :max="yearFilterOptions[1]"
+        :min="yearFilterOptions[0]"
+        step="1"
+        thumb-label="hover"
+      ></v-range-slider>
+    </v-col>
+    <!-- Runtime filter -->
+    <v-col cols="4" class="px-4">
+      <h4>Choose runtime range</h4>
+      <v-range-slider
+        v-model="runtimeFilter"
+        :max="runtimeFilterOptions[1]"
+        :min="runtimeFilterOptions[0]"
+        step="1"
+        thumb-label="hover"
+      ></v-range-slider>
+    </v-col>
+    <!-- IMDB Rating filter -->
+    <v-col cols="4" class="px-4">
+      <h4>Choose IMDB Rating range</h4>
+      <v-range-slider
+        v-model="imdbFilter"
+        :max="imdbFilterOptions[1]"
+        :min="imdbFilterOptions[0]"
+        step="0.1"
+        thumb-label="hover"
+      ></v-range-slider>
+    </v-col>
+  </v-row>
   <!-- Rated filter -->
-  <v-card-text>
+  <v-card>
     <h4>Choose Rated options</h4>
     <v-chip-group v-model="ratedFilter" column multiple>
       <v-chip v-for="rated in ratedFilterOptions" :key="rated" :text="rated" filter></v-chip>
     </v-chip-group>
-  </v-card-text>
-  <!-- Runtime filter -->
-  <v-card-text>
-    <h4>Choose runtime range</h4>
-    <v-range-slider
-      v-model="runtimeFilter"
-      :max="runtimeFilterOptions[1]"
-      :min="runtimeFilterOptions[0]"
-      step="1"
-      thumb-label="hover"
-    ></v-range-slider>
-  </v-card-text>
+  </v-card>
   <!-- Genre filters -->
-  <v-card-text>
+  <v-card>
     <h4>Choose genres</h4>
     <v-chip-group v-model="genreFilter" column multiple>
       <v-chip v-for="genre in genreFilterOptions" :key="genre" :text="genre" filter></v-chip>
     </v-chip-group>
-  </v-card-text>
-  <!-- IMDB Rating filter -->
-  <v-card-text>
-    <h4>Choose IMDB Rating range</h4>
-    <v-range-slider
-      v-model="imdbFilter"
-      :max="imdbFilterOptions[1]"
-      :min="imdbFilterOptions[0]"
-      step="0.1"
-      thumb-label="hover"
-    ></v-range-slider>
-  </v-card-text>
+  </v-card>
   <v-card title="Movies" flat data-testid="title">
     <v-data-table
       :headers="headers"

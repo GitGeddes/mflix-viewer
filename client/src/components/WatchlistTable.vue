@@ -34,14 +34,18 @@ onMounted(() => {
 
 // Get all of the movies and update the data table.
 function fetchWatchlist() {
-  getWatchlist().then((res) => {
+  getWatchlist().then(async (res) => {
     if (!res) {
       console.error('Error loading movies')
       return
     }
     console.log('result', res)
     if (res.watchlist) {
-      movies.value = res.watchlist.movies
+      // Only has the IDs, fetch the actual movie objects
+      const fetchedMovies = await postFetchMovies({ movies: res.watchlist.movies })
+      if (fetchedMovies) {
+        movies.value = fetchedMovies.movies
+      }
     }
     // Reset the loading state
     isLoading.value = false
