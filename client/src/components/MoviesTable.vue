@@ -3,7 +3,9 @@ import {
   getAllMovies,
   getDistinctGenres,
   getDistinctRateds,
-  getMaxRuntime,
+  getImdbRatingRange,
+  getRuntimeRange,
+  getYearRange,
   type Movie,
 } from '@/services/api'
 import { onMounted, ref, type Ref } from 'vue'
@@ -56,9 +58,9 @@ onMounted(() => {
 
 onMounted(() => {
   // Populate all filter fields
-  getYearRange()
-  getRatedRange()
-  getRuntimeRange()
+  getYears()
+  getAllRateds()
+  getRuntimes()
   getIMDBRange()
   getAllGenres()
 })
@@ -80,23 +82,37 @@ function searchFilter(value: string, query: string, item) {
   return value.indexOf(query) !== -1 && genreIntersection
 }
 
-async function onClickDistinct() {
-  await getDistinctRateds()
+async function getYears() {
+  const result = await getYearRange()
+  if (result) {
+    yearFilterOptions.value = [result.minYear, result.maxYear]
+    yearFilter.value = yearFilterOptions.value
+  }
 }
 
-async function getYearRange() {}
+async function getAllRateds() {
+  const result = await getDistinctRateds()
+  if (result) {
+    ratedFilterOptions.value = result.sort()
+  }
+}
 
-async function getRatedRange() {}
-
-async function getRuntimeRange() {
-  const result = await getMaxRuntime()
+async function getRuntimes() {
+  const result = await getRuntimeRange()
   if (result) {
     runtimeFilterOptions.value = [result.minRuntime, result.maxRuntime]
     runtimeFilter.value = runtimeFilterOptions.value
   }
 }
 
-async function getIMDBRange() {}
+async function getIMDBRange() {
+  const result = await getImdbRatingRange()
+  console.log('imdb', result)
+  if (result) {
+    imdbFilterOptions.value = [result.minIMDBRating, result.maxIMDBRating]
+    imdbFilter.value = imdbFilterOptions.value
+  }
+}
 
 async function getAllGenres() {
   const result = await getDistinctGenres()
@@ -117,10 +133,20 @@ function clickRow(event, row) {
   <!-- Year filter -->
   <v-card-text>
     <h4>Choose Year range</h4>
+    <v-range-slider
+      v-model="yearFilter"
+      :max="yearFilterOptions[1]"
+      :min="yearFilterOptions[0]"
+      step="1"
+      thumb-label="hover"
+    ></v-range-slider>
   </v-card-text>
   <!-- Rated filter -->
   <v-card-text>
     <h4>Choose Rated options</h4>
+    <v-chip-group v-model="ratedFilter" column multiple>
+      <v-chip v-for="rated in ratedFilterOptions" :key="rated" :text="rated"></v-chip>
+    </v-chip-group>
   </v-card-text>
   <!-- Runtime filter -->
   <v-card-text>
@@ -143,6 +169,13 @@ function clickRow(event, row) {
   <!-- IMDB Rating filter -->
   <v-card-text>
     <h4>Choose IMDB Rating range</h4>
+    <v-range-slider
+      v-model="imdbFilter"
+      :max="imdbFilterOptions[1]"
+      :min="imdbFilterOptions[0]"
+      step="0.1"
+      thumb-label="hover"
+    ></v-range-slider>
   </v-card-text>
   <v-card title="Movies" flat data-testid="title">
     <v-data-table
@@ -182,7 +215,7 @@ function clickRow(event, row) {
 
       <template #[`item.genres`]="{ item }">
         <!-- Account for the genre lists being long -->
-        <TruncatedField :text="item.genres.join(', ')" width="200"></TruncatedField>
+        <TruncatedField :text="item.genres?.join(', ')" width="200"></TruncatedField>
       </template>
 
       <template #[`item.poster`]="{ item }">

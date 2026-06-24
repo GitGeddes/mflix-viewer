@@ -40,6 +40,20 @@ router.get('/:id', async function (req, res, next) {
   else res.status(200).send(result)
 })
 
+/** GET maximum and minimum of the release year across the Movies collection */
+router.get('/aggregate/year', async function (req, res, next) {
+  let collection = db.collection('movies')
+  let query = {
+    $group: {
+      _id: {}, // Groups all documents together regardless of any field
+      maxYear: { $max: '$year' },
+      minYear: { $min: '$year' },
+    },
+  }
+  let aggregate = await collection.aggregate([query]).toArray()
+  res.status(200).send(aggregate[0])
+})
+
 /** GET maximum and minimum of the runtime across the Movies collection */
 router.get('/aggregate/runtime', async function (req, res, next) {
   let collection = db.collection('movies')
@@ -100,6 +114,23 @@ router.get('/aggregate/genre', async function (req, res, next) {
     ])
     .toArray()
   res.status(200).send(aggregate[0].distinctGenres)
+})
+
+/** GET maximum and minimum of the IMDB rating across the Movies collection */
+router.get('/aggregate/imdb', async function (req, res, next) {
+  let collection = db.collection('movies')
+  const aggregate = await collection
+    .aggregate([
+      {
+        $group: {
+          _id: null,
+          maxIMDBRating: { $max: '$imdb.rating' },
+          minIMDBRating: { $min: '$imdb.rating' },
+        },
+      },
+    ])
+    .toArray()
+  res.status(200).send(aggregate[0])
 })
 
 export default router

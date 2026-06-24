@@ -48,7 +48,7 @@ export interface Movie {
   countries: Array<string>
   directors: Array<string>
   fullPlot?: string
-  genres: Array<string>
+  genres?: Array<string>
   imdb: {
     id: number
     rating: number
@@ -101,7 +101,15 @@ export async function getMovieById(id: string): Promise<Movie | null> {
   return getRequestFactory<Movie>(API_URL + `movies/${id}`)
 }
 
-export async function getMaxRuntime(): Promise<{
+export async function getYearRange(): Promise<{
+  _id: Object
+  maxYear: number
+  minYear: number
+} | null> {
+  return getRequestFactory(API_URL + 'movies/aggregate/year')
+}
+
+export async function getRuntimeRange(): Promise<{
   _id: Object
   maxRuntime: number
   minRuntime: number
@@ -113,12 +121,20 @@ export async function getMaxRuntimeByType() {
   return getRequestFactory(API_URL + 'movies/aggregate/runtimeByType')
 }
 
-export async function getDistinctRateds() {
+export async function getDistinctRateds(): Promise<string[] | null> {
   return getRequestFactory(API_URL + 'movies/aggregate/rated')
 }
 
 export async function getDistinctGenres(): Promise<string[] | null> {
   return getRequestFactory(API_URL + 'movies/aggregate/genre')
+}
+
+export async function getImdbRatingRange(): Promise<{
+  _id: Object
+  maxIMDBRating: number
+  minIMDBRating: number
+} | null> {
+  return getRequestFactory(API_URL + 'movies/aggregate/imdb')
 }
 //#endregion
 
