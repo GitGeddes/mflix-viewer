@@ -133,4 +133,17 @@ router.get('/aggregate/imdb', async function (req, res, next) {
   res.status(200).send(aggregate[0])
 })
 
+/** POST fetch list of movies by IDs */
+router.post('/', async function (req, res, next) {
+  let collection = db.collection('movies')
+  try {
+    // Need to ensure the IDs are proper MongoDB ObjectIds
+    const query = { _id: { $in: req.body.movies.map((val) => new ObjectId(val)) } }
+    const result = await collection.find(query).toArray()
+    res.status(200).json({ movies: result })
+  } catch (error) {
+    res.status(500).json({ error: 'Internal server error' })
+  }
+})
+
 export default router

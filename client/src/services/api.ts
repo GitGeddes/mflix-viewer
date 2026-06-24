@@ -215,4 +215,25 @@ export async function postSaveFavoriteGenres(body: SaveFavoriteGenresBody) {
 export async function getFavoriteGenres() {
   return getRequestFactory<SaveFavoriteGenresBody & WithDocumentId>(API_URL + 'user/favoriteGenres')
 }
+
+interface AddToWatchlistBody {
+  movies: Movie['_id'][]
+}
+export async function postAddToWatchlist(body: AddToWatchlistBody) {
+  return postRequestFactory<AddToWatchlistBody, unknown>(API_URL + 'user/watchlist', body)
+}
+
+interface FetchWatchlistResult {
+  watchlist: { _id: string; movies: Movie[] } | null
+}
+export async function getWatchlist() {
+  return getRequestFactory<FetchWatchlistResult>(API_URL + 'user/watchlist')
+}
+
+interface FetchMoviesBody {
+  movies: string[] // Movie IDs
+}
+export async function postFetchMovies(body: FetchMoviesBody) {
+  return postRequestFactory<FetchMoviesBody, unknown>(API_URL + 'movies/', body)
+}
 //#endregion

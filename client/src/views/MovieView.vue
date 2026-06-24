@@ -19,11 +19,12 @@ async function getMovie() {
 </script>
 
 <template>
-  <h1>{{ movie?.title }}</h1>
-  <h2>{{ movie?.year }}</h2>
-  <h3>{{ movie?.runtime }}</h3>
-  <h3>{{ movie?.rated }}</h3>
-  <h3>{{ movie?.genres }}</h3>
-  <h3>{{ movie?.imdb.rating }}</h3>
+  <h1>Title: {{ movie?.title }}</h1>
+  <h2>Year: {{ movie?.year }}</h2>
+  <h3>Runtime: {{ movie?.runtime }}</h3>
+  <h3>Rated: {{ movie?.rated }}</h3>
+  <h3>Genres: {{ movie?.genres?.join(', ') }}</h3>
+  <h3>IMDB Rating: {{ movie?.imdb.rating }}</h3>
+  <h3>Poster:</h3>
   <img :src="movie?.poster" />
 </template>

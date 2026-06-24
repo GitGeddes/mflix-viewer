@@ -1,4 +1,5 @@
 <script setup lang="ts">
+import WatchlistTable from '@/components/WatchlistTable.vue'
 import router from '@/router'
 import {
   getDistinctGenres,
@@ -71,14 +72,20 @@ async function onClickGetFavoriteGenres() {
 </script>
 
 <template>
-  <p>User settings</p>
   <v-card-text>
-    <h4>Choose favorite genres</h4>
+    <h1>User settings</h1>
+    <v-btn v-if="user !== undefined" @click="onClickLogout">Log out</v-btn>
+  </v-card-text>
+  <v-card-text>
+    <h2>Choose favorite genres</h2>
     <v-chip-group v-model="genreFilter" column multiple>
       <v-chip v-for="genre in genreFilterOptions" :key="genre" :text="genre" filter></v-chip>
     </v-chip-group>
     <v-btn @click="onClickSaveFavoriteGenres">Save genres</v-btn>
     <v-btn @click="onClickGetFavoriteGenres">Get genres</v-btn>
   </v-card-text>
-  <v-btn v-if="user !== undefined" @click="onClickLogout">Log out</v-btn>
+  <v-card-text>
+    <h2>Watchlist</h2>
+    <WatchlistTable></WatchlistTable>
+  </v-card-text>
 </template>
