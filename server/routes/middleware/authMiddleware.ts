@@ -1,4 +1,4 @@
-import db from '../../../src/dbConnection.ts'
+import db from '../../src/dbConnection.ts'
 import jwt from 'jsonwebtoken'
 
 export async function authenticateToken(req, res, next) {

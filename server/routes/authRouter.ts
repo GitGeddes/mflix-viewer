@@ -4,7 +4,7 @@ import db from '../src/dbConnection.ts'
 import express from 'express'
 import bcrypt from 'bcrypt'
 import jwt from 'jsonwebtoken'
-import { authenticateToken } from './auth/middleware/authMiddleware.ts'
+import { authenticateToken } from './middleware/authMiddleware.ts'
 import { ObjectId } from 'mongodb'
 
 const secret: string = process.env.JWT_TOKEN!
