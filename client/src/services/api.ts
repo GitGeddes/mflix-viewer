@@ -4,6 +4,39 @@ const API_URL = 'http://localhost:3000/api/'
 
 export const TOKEN_LOCAL_STORAGE_KEY = 'access_token'
 
+const api = axios.create({ baseURL: BASE_URL })
+
+api.interceptors.request.use((config) => {
+  const token = localStorage.getItem(TOKEN_LOCAL_STORAGE_KEY)
+  if (token) {
+    config.headers.set('Authorization', `Bearer ${token}`)
+  }
+  return config
+})
+
+// Quickly make GET requests
+async function getRequestFactory<T>(url: string): Promise<T | null> {
+  try {
+    const response = await api.get(url)
+    return response.data
+  } catch (error) {
+    console.error('Error in GET request:', error)
+    return null
+  }
+}
+
+// Quickly make POST requests
+async function postRequestFactory<T, V>(url: string, body: T): Promise<V | null> {
+  try {
+    const response = await api.post(url, body)
+    return response.data
+  } catch (error) {
+    console.error('Error in POST request:', error)
+    return null
+  }
+}
+
+//#region Movies API
 export interface Movie {
   _id: string
   awards: {
@@ -55,16 +88,6 @@ export interface Movie {
   year: number
 }
 
-const api = axios.create({ baseURL: BASE_URL })
-
-api.interceptors.request.use((config) => {
-  const token = localStorage.getItem(TOKEN_LOCAL_STORAGE_KEY)
-  if (token) {
-    config.headers.set('Authorization', `Bearer ${token}`)
-  }
-  return config
-})
-
 // Movie endpoints
 export async function getAllMovies(): Promise<Movie[] | null> {
   return getRequestFactory<Movie[]>(API_URL + 'movies')
@@ -89,7 +112,9 @@ export async function getMaxRuntimeByType() {
 export async function getDistinctRateds() {
   return getRequestFactory(API_URL + 'movies/aggregate/rated')
 }
+//#endregion
 
+//#region User API
 interface WithDocumentId {
   _id: string
 }
@@ -155,23 +180,4 @@ export async function postGetUser(body: GetUserBody) {
 export async function postLogout() {
   return postRequestFactory<undefined, unknown>(API_URL + 'user/logout', undefined)
 }
-
-async function getRequestFactory<T>(url: string): Promise<T | null> {
-  try {
-    const response = await api.get(url)
-    return response.data
-  } catch (error) {
-    console.error('Error in GET request:', error)
-    return null
-  }
-}
-
-async function postRequestFactory<T, V>(url: string, body: T): Promise<V | null> {
-  try {
-    const response = await api.post(url, body)
-    return response.data
-  } catch (error) {
-    console.error('Error in POST request:', error)
-    return null
-  }
-}
+//#endregion
