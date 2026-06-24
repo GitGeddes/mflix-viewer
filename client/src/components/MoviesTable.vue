@@ -145,7 +145,7 @@ function clickRow(event, row) {
   <v-card-text>
     <h4>Choose Rated options</h4>
     <v-chip-group v-model="ratedFilter" column multiple>
-      <v-chip v-for="rated in ratedFilterOptions" :key="rated" :text="rated"></v-chip>
+      <v-chip v-for="rated in ratedFilterOptions" :key="rated" :text="rated" filter></v-chip>
     </v-chip-group>
   </v-card-text>
   <!-- Runtime filter -->
@@ -163,7 +163,7 @@ function clickRow(event, row) {
   <v-card-text>
     <h4>Choose genres</h4>
     <v-chip-group v-model="genreFilter" column multiple>
-      <v-chip v-for="genre in genreFilterOptions" :key="genre" :text="genre"></v-chip>
+      <v-chip v-for="genre in genreFilterOptions" :key="genre" :text="genre" filter></v-chip>
     </v-chip-group>
   </v-card-text>
   <!-- IMDB Rating filter -->

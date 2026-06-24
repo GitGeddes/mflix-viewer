@@ -133,4 +133,32 @@ router.post('/logout', async function (req, res) {
   }
 })
 
+// POST favorite genres to collection
+router.post('/favoriteGenres', async function (req, res) {
+  let collection = await db.collection('favorite_genres')
+  try {
+    const query = { _id: new ObjectId(req.user.userId) }
+    const update = { $set: req.body }
+    const options = { upsert: true } // Enable upsert (insert when doc doesn't exist)
+    collection.updateOne(query, update, options)
+    res.status(200).json({ message: 'success' })
+  } catch (error) {
+    res.status(500).json({ error: 'Internal server error' })
+  }
+})
+
+// GET favorite genres from collection
+router.get('/favoriteGenres', async function (req, res) {
+  let collection = await db.collection('favorite_genres')
+  try {
+    console.log('user', req.user)
+    const query = { _id: new ObjectId(req.user.userId) }
+    const genres = await collection.findOne(query)
+    console.log('genres doc', genres)
+    res.status(200).json(genres)
+  } catch (error) {
+    res.status(500).json({ error: 'Internal server error' })
+  }
+})
+
 export default router

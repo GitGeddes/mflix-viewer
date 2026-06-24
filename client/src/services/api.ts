@@ -204,4 +204,15 @@ export async function postGetUser(body: GetUserBody) {
 export async function postLogout() {
   return postRequestFactory<undefined, unknown>(API_URL + 'user/logout', undefined)
 }
+
+interface SaveFavoriteGenresBody {
+  genres: string[]
+}
+export async function postSaveFavoriteGenres(body: SaveFavoriteGenresBody) {
+  return postRequestFactory<SaveFavoriteGenresBody, unknown>(API_URL + 'user/favoriteGenres', body)
+}
+
+export async function getFavoriteGenres() {
+  return getRequestFactory<SaveFavoriteGenresBody & WithDocumentId>(API_URL + 'user/favoriteGenres')
+}
 //#endregion
