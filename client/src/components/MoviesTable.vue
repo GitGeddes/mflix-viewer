@@ -8,7 +8,7 @@ import {
   getYearRange,
   type Movie,
 } from '@/services/api'
-import { onMounted, ref, type Ref } from 'vue'
+import { computed, onMounted, ref, type Ref } from 'vue'
 import { VCard } from 'vuetify/components'
 import TruncatedField from './TruncatedField.vue'
 import PosterImage from './PosterImage.vue'
@@ -18,21 +18,31 @@ const router = useRouter()
 
 // Search query
 const search = ref('')
+
+//#region Filters
+// Filter enable/disable toggles
+const enableYearFilter = ref(false)
+const enableRuntimeFilter = ref(false)
+const enableRatedFilter = ref(false)
+const enableGenreFilter = ref(false)
+const enableIMDBFilter = ref(false)
+
 // Year slider
-const yearFilter = ref([0, 0])
-const yearFilterOptions = ref([0, 0])
+const yearFilter: Ref<[number, number]> = ref([0, 0])
+const yearFilterOptions: Ref<[number, number]> = ref([0, 0])
 // Runtime slider
-const runtimeFilter = ref([0, 0])
-const runtimeFilterOptions = ref([0, 0])
+const runtimeFilter: Ref<[number, number]> = ref([0, 0])
+const runtimeFilterOptions: Ref<[number, number]> = ref([0, 0])
 // Rated array
-const ratedFilter: Ref<string[]> = ref([])
+const ratedFilter: Ref<number[]> = ref([])
 const ratedFilterOptions: Ref<string[]> = ref([])
 // Genre array
-const genreFilter: Ref<string[]> = ref([])
+const genreFilter: Ref<number[]> = ref([])
 const genreFilterOptions: Ref<string[]> = ref([])
 // IMDB rating slider
-const imdbFilter = ref([0, 0])
-const imdbFilterOptions = ref([0, 0])
+const imdbFilter: Ref<[number, number]> = ref([0, 0])
+const imdbFilterOptions: Ref<[number, number]> = ref([0, 0])
+//#endregion Filters
 
 // Headers for the data table
 const headers = [
@@ -47,6 +57,22 @@ const headers = [
 ]
 
 const movies: Ref<Movie[]> = ref([])
+
+function boolToString(bool: boolean) {
+  if (bool) return 'true'
+  else return ''
+}
+
+const filterChanged = computed(() => {
+  return (
+    search.value +
+    boolToString(enableGenreFilter.value) +
+    boolToString(enableIMDBFilter.value) +
+    boolToString(enableRatedFilter.value) +
+    boolToString(enableRuntimeFilter.value) +
+    boolToString(enableYearFilter.value)
+  )
+})
 
 // Show the loading text in the data table.
 const isLoading = ref(true)
@@ -64,6 +90,64 @@ onMounted(() => {
   getIMDBRange()
   getAllGenres()
 })
+
+// Column filter functions written by AI
+// Custom filter functions for each column
+function yearColumnFilter(item: Movie): boolean {
+  if (!enableYearFilter.value) return true // Skip filter if disabled
+
+  const itemYear = parseInt(item.year?.toString() || '0', 10)
+  return itemYear >= yearFilter.value[0] && itemYear <= yearFilter.value[1]
+}
+
+function runtimeColumnFilter(item: Movie): boolean {
+  if (!enableRuntimeFilter.value) return true
+
+  const itemRuntime = parseInt(item.runtime?.toString() || '0', 10)
+  return itemRuntime >= runtimeFilter.value[0] && itemRuntime <= runtimeFilter.value[1]
+}
+
+function ratedColumnFilter(item: Movie, rateds: string[]): boolean {
+  if (!enableRatedFilter.value) return true
+
+  // Check if the item's rated value is in the enabled ratings list
+  const itemRated = item.rated?.toString() || ''
+  return rateds.includes(itemRated)
+}
+
+function genreColumnFilter(item: Movie, genres: string[]): boolean {
+  if (!enableGenreFilter.value) return true
+
+  // Check if any of the item's genres are in the enabled genres list
+  const itemGenres = item.genres || []
+
+  return genres.every((genre: string) => itemGenres.some((g) => g.includes(genre)))
+}
+
+function imdbColumnFilter(item: Movie): boolean {
+  if (!enableIMDBFilter.value) return true
+
+  const imdbRating = parseFloat(item['imdb.rating'].toString() || '0')
+  return imdbRating >= imdbFilter.value[0] && imdbRating <= imdbFilter.value[1]
+}
+
+function customFilter(item: Movie): boolean {
+  const namedGenres = genreFilterOptions.value.filter((val, index) =>
+    genreFilter.value.includes(index),
+  )
+  const namedRateds = ratedFilterOptions.value.filter((val, index) =>
+    ratedFilter.value.includes(index),
+  )
+
+  return (
+    yearColumnFilter(item) &&
+    runtimeColumnFilter(item) &&
+    ratedColumnFilter(item, namedRateds) &&
+    genreColumnFilter(item, namedGenres) &&
+    imdbColumnFilter(item)
+  )
+}
+
 // Get all of the movies and update the data table.
 function getMovies() {
   getAllMovies().then((res) => {
@@ -78,8 +162,16 @@ function getMovies() {
 }
 
 function searchFilter(value: string, query: string, item) {
-  const genreIntersection = genreFilter.value.filter((el) => item.genres.includes(el)).length > 0
-  return value.indexOf(query) !== -1 && genreIntersection
+  const tempValue = search.value
+  if (!tempValue || tempValue.trim() === '') return customFilter(item.columns)
+
+  return (
+    value != null &&
+    tempValue != null &&
+    typeof value === 'string' &&
+    value.indexOf(tempValue) !== -1 &&
+    customFilter(item.columns)
+  )
 }
 
 async function getYears() {
@@ -107,7 +199,6 @@ async function getRuntimes() {
 
 async function getIMDBRange() {
   const result = await getImdbRatingRange()
-  console.log('imdb', result)
   if (result) {
     // Some entries don't parse correctly into a number, force the range to be 0-10
     // imdbFilterOptions.value = [result.minIMDBRating, result.maxIMDBRating]
@@ -185,11 +276,14 @@ function clickRow(event, row) {
     <v-data-table
       :headers="headers"
       :items="movies"
-      :search="search"
+      :search="filterChanged"
       :loading="isLoading"
       :filter-keys="['title']"
+      :custom-filter-keys="['year', 'runtime', 'rated', 'genres', 'imdb.rating']"
+      :custom-filter="searchFilter"
       @click:row="clickRow"
       loading-text="Loading Movies"
+      striped="odd"
     >
       <template v-slot:top>
         <v-text-field
@@ -200,12 +294,16 @@ function clickRow(event, row) {
           hide-details
           single-line
         ></v-text-field>
-      </template>
 
-      <!-- TODO: Filtering options for each column -->
-      <!-- Use min and max for number fields like release year, runtime and IMDB rating -->
-      <!-- Use checkboxes of strings for genres -->
-      <!-- Maybe use first letter for title? -->
+        <!-- Filter toggle controls (AI) -->
+        <div class="mt-4 d-flex gap-4">
+          <v-checkbox v-model="enableYearFilter" label="Year Range Filter"></v-checkbox>
+          <v-checkbox v-model="enableRuntimeFilter" label="Runtime Range Filter"></v-checkbox>
+          <v-checkbox v-model="enableRatedFilter" label="Rated Filter"></v-checkbox>
+          <v-checkbox v-model="enableGenreFilter" label="Genre Filter"></v-checkbox>
+          <v-checkbox v-model="enableIMDBFilter" label="IMDB Rating Filter"></v-checkbox>
+        </div>
+      </template>
 
       <template #[`item.title`]="{ item }">
         <!-- Account for very long titles -->
