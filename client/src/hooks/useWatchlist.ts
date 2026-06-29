@@ -9,7 +9,9 @@ export default function useWatchlist() {
 
   // Initialize watchlist table on load
   onMounted(() => {
-    fetchWatchlist()
+    fetchWatchlist().then((movies) => {
+      if (movies) watchlist.value = Object.values(movies)
+    })
   })
 
   // Get all of the movies and update the data table.
@@ -22,7 +24,6 @@ export default function useWatchlist() {
           // Only has the IDs, fetch the actual movie objects
           const fetchedMovies = await postFetchMovies({ movies: res.watchlist.movies })
           if (fetchedMovies) {
-            watchlist.value = Object.values(fetchedMovies.movies)
             return fetchedMovies.movies
           }
         }

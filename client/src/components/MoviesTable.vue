@@ -32,7 +32,7 @@ const { movies, isLoading, addToWatchlist, removeFromWatchlist } = useMovies()
 
 // Headers for the data table
 const headers = [
-  { key: 'actions', title: 'Actions' },
+  { key: 'watchlist', title: 'Watchlist' },
   { key: 'title', title: 'Title' },
   { key: 'year', title: 'Year' },
   { key: 'runtime', title: 'Runtime' },
@@ -152,8 +152,8 @@ function clickRow(event, row) {
         <PosterImage :poster="item.poster"></PosterImage>
       </template>
 
-      <template #[`item.actions`]="{ item }">
-        <div class="d-flex ga-2 justify-end" @click.stop="">
+      <template #[`item.watchlist`]="{ item }">
+        <div class="d-flex justify-center" @click.stop="">
           <v-icon
             v-if="item.isWatchlisted"
             color="medium-emphasis"
