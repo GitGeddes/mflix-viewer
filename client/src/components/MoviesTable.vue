@@ -1,11 +1,10 @@
 <script setup lang="ts">
+import { useRouter } from 'vue-router'
 import TruncatedField from './TruncatedField.vue'
 import PosterImage from './PosterImage.vue'
-import { useRouter } from 'vue-router'
 import useMovies from '@/hooks/useMovies.ts'
 import useFilters from '@/hooks/useFilters.ts'
 import useGenres from '@/hooks/useGenres.ts'
-import type { Movie } from '@/services/api.ts'
 
 const router = useRouter()
 
@@ -31,13 +30,7 @@ const {
 } = useFilters()
 const { movies, isLoading, addToWatchlist, removeFromWatchlist } = useMovies()
 
-const { favoriteGenres } = useGenres()
-
-// Helper function to check if movie has any favorite genres
-function hasFavoriteGenres(movie: Movie): boolean {
-  if (!movie.genres) return false
-  return movie.genres.some((genre) => favoriteGenres.value.includes(genre))
-}
+const { hasFavoriteGenres } = useGenres()
 
 // Headers for the data table
 const headers = [
@@ -142,9 +135,9 @@ function clickRow(event, row) {
         </div>
       </template>
 
-      <!-- Add row class for favorite genres -->
+      <!-- Customize certain aspects of each row -->
       <template v-slot:item="{ item }">
-        <tr :key="`$${item._id}`" :class="[{ 'bg-blue-grey-darken-3': hasFavoriteGenres(item) }]">
+        <tr :key="`$${item._id}`">
           <td>
             <div class="d-flex justify-center" @click.stop="">
               <v-icon
@@ -171,7 +164,7 @@ function clickRow(event, row) {
             <TruncatedField :text="item.rated" width="110"></TruncatedField>
           </td>
           <td>{{ item.type }}</td>
-          <td>
+          <td :class="[{ 'bg-blue-grey-darken-1': hasFavoriteGenres(item) }]">
             <TruncatedField :text="item.genres?.join(', ')" width="200"></TruncatedField>
           </td>
           <td>{{ item.imdb.rating }}</td>

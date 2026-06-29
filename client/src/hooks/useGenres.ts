@@ -1,4 +1,9 @@
-import { getDistinctGenres, getFavoriteGenres, postSaveFavoriteGenres } from '@/services/api'
+import {
+  getDistinctGenres,
+  getFavoriteGenres,
+  postSaveFavoriteGenres,
+  type Movie,
+} from '@/services/api'
 import { computed, onMounted, ref, type Ref } from 'vue'
 
 export default function useGenres() {
@@ -40,11 +45,18 @@ export default function useGenres() {
     }
   }
 
+  // Helper function to check if movie has any favorite genres (AI written and cleaned up)
+  function hasFavoriteGenres(movie: Movie): boolean {
+    if (!movie.genres) return false
+    return movie.genres.some((genre) => favoriteGenres.value.includes(genre))
+  }
+
   return {
     favoriteGenres,
     genreFilter,
     genreFilterOptions,
     onClickGetFavoriteGenres,
     onClickSaveFavoriteGenres,
+    hasFavoriteGenres,
   }
 }
