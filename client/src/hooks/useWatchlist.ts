@@ -13,26 +13,30 @@ export default function useWatchlist() {
   })
 
   // Get all of the movies and update the data table.
-  function fetchWatchlist() {
-    getWatchlist().then(async (res) => {
-      if (!res) {
-        console.error('Error loading watchlist')
-        return
-      }
-      if (res.watchlist) {
-        // Only has the IDs, fetch the actual movie objects
-        const fetchedMovies = await postFetchMovies({ movies: res.watchlist.movies })
-        if (fetchedMovies) {
-          watchlist.value = fetchedMovies.movies
+  async function fetchWatchlist() {
+    return getWatchlist()
+      .then(async (res) => {
+        if (!res) {
+          console.error('Error loading watchlist')
+        } else if (res.watchlist) {
+          // Only has the IDs, fetch the actual movie objects
+          const fetchedMovies = await postFetchMovies({ movies: res.watchlist.movies })
+          if (fetchedMovies) {
+            watchlist.value = Object.values(fetchedMovies.movies)
+            return fetchedMovies.movies
+          }
         }
-      }
-      // Reset the loading state
-      isLoading.value = false
-    })
+        return null
+      })
+      .finally(() => {
+        // Reset the loading state
+        isLoading.value = false
+      })
   }
 
   return {
     watchlist,
     isLoading,
+    fetchWatchlist,
   }
 }

@@ -8,8 +8,11 @@ import {
   type MovieWithWatchlist,
 } from '@/services/api'
 import { computed, onMounted, ref, type Ref } from 'vue'
+import useWatchlist from './useWatchlist'
 
 export default function useMovies() {
+  const { fetchWatchlist } = useWatchlist()
+
   const moviesDict: Ref<MoviesDictionary> = ref({})
   const movies: Ref<MovieWithWatchlist[]> = computed(() => Object.values(moviesDict.value))
 
@@ -22,24 +25,6 @@ export default function useMovies() {
   })
 
   // Get all of the movies and update the data table.
-  async function fetchWatchlist() {
-    return getWatchlist().then(async (res) => {
-      if (!res) {
-        console.error('Error loading watchlist')
-        return null
-      }
-      if (res.watchlist) {
-        // Only has the IDs, fetch the actual movie objects
-        const fetchedMovies = await postFetchMovies({ movies: res.watchlist.movies })
-        if (fetchedMovies) {
-          return fetchedMovies
-        }
-      }
-      return null
-    })
-  }
-
-  // Get all of the movies and update the data table.
   function getMovies() {
     getAllMovies().then((res) => {
       if (!res) {
@@ -47,15 +32,19 @@ export default function useMovies() {
         return
       }
       moviesDict.value = res
-      fetchWatchlist().then((res) => {
-        if (!res) return
-        Object.values(res.movies).forEach((movie) => {
-          movie['isWatchlisted'] = true
-          moviesDict.value[movie['_id']] = movie
+      fetchWatchlist()
+        .then((res) => {
+          if (!res) return
+          Object.values(res).forEach((movie) => {
+            // Set the watchlisted flag to true after loading the watchlist
+            movie['isWatchlisted'] = true
+            moviesDict.value[movie['_id']] = movie
+          })
         })
-        // Reset the loading state
-        isLoading.value = false
-      })
+        .finally(() => {
+          // Reset the loading state
+          isLoading.value = false
+        })
     })
   }
 
