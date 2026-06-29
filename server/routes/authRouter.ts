@@ -25,7 +25,7 @@ router.post('/createUser', async function (req, res) {
       email: email,
       password: passwordHash,
     })
-    res.json({ user: user }).status(200)
+    res.status(200).json({ user: user })
   } catch (error) {
     // User already exists
     res.status(401).send(null)
@@ -62,16 +62,14 @@ router.post('/login', async function (req, res) {
     // Generate JWT token
     const token = jwt.sign({ userId: user._id, email: user.email }, secret, { expiresIn: '7d' })
 
-    res
-      .json({
-        token,
-        expiresIn: '7d',
-        user: {
-          id: user._id,
-          email: user.email,
-        },
-      })
-      .status(200)
+    res.status(200).json({
+      token,
+      expiresIn: '7d',
+      user: {
+        id: user._id,
+        email: user.email,
+      },
+    })
   } catch (error) {
     res.status(500).json({ error: 'Internal server error' })
   }

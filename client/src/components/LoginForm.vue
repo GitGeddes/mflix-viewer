@@ -1,8 +1,7 @@
 <script setup lang="ts">
-import router from '@/router'
-import { postLogin } from '@/services/api'
 import { ref } from 'vue'
 import SignupForm from './SignupForm.vue'
+import useLogin from '@/hooks/useLogin.ts'
 
 const signup = ref(false)
 
@@ -10,28 +9,7 @@ function onClickToggleSignup() {
   signup.value = !signup.value
 }
 
-const email = ref('')
-const password = ref('')
-
-// TODO: Remove this testing function
-async function onClickLogin() {
-  const response = await postLogin({ email: 'test', password: 'testpass' })
-  if (response) {
-    // Navigate to the User page
-    router.push('/user')
-  }
-}
-
-async function onClickSubmit() {
-  const response = await postLogin({
-    email: email.value,
-    password: password.value,
-  })
-  if (response) {
-    // Navigate to the User page after logging in
-    router.push('/user')
-  }
-}
+const { email, password, onClickLogin, onClickSubmit } = useLogin()
 </script>
 
 <template>

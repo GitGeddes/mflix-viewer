@@ -3,6 +3,7 @@ const BASE_URL = 'http://localhost:3000'
 const API_URL = 'http://localhost:3000/api/'
 
 export const TOKEN_LOCAL_STORAGE_KEY = 'access_token'
+export const LOCAL_STORAGE_UPDATE_KEY = 'login-storage-key-updated'
 
 const api = axios.create({ baseURL: BASE_URL })
 
@@ -252,6 +253,14 @@ export async function postLogin(body: LoginBody) {
   const response = await postRequestFactory<LoginBody, LoginResponse>(API_URL + 'user/login', body)
   if (response) {
     localStorage.setItem(TOKEN_LOCAL_STORAGE_KEY, response.token)
+    // Dispatch an event whenever the login storage key is updated
+    window.dispatchEvent(
+      new CustomEvent<{ storage: string | null }>(LOCAL_STORAGE_UPDATE_KEY, {
+        detail: {
+          storage: localStorage.getItem(TOKEN_LOCAL_STORAGE_KEY),
+        },
+      }),
+    )
   }
   return response
 }
@@ -266,6 +275,14 @@ export async function postGetUser(body: GetUserBody) {
 }
 
 export async function postLogout() {
+  // Dispatch an event whenever the login storage key is updated
+  window.dispatchEvent(
+    new CustomEvent<{ storage: string | null }>(LOCAL_STORAGE_UPDATE_KEY, {
+      detail: {
+        storage: localStorage.getItem(TOKEN_LOCAL_STORAGE_KEY),
+      },
+    }),
+  )
   return postRequestFactory<undefined, unknown>(API_URL + 'user/logout', undefined)
 }
 

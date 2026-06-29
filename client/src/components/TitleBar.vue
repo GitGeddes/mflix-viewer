@@ -1,20 +1,45 @@
 <script setup lang="ts">
-import { getSelfUser } from '@/services/api'
-import { onMounted, ref } from 'vue'
+import { getSelfUser, LOCAL_STORAGE_UPDATE_KEY, TOKEN_LOCAL_STORAGE_KEY } from '@/services/api'
+import { onMounted, onUnmounted, ref, watch } from 'vue'
 import { useRouter } from 'vue-router'
 
 const drawer = ref(false)
 const isLoggedIn = ref(false)
 
 // TODO: Watch the localStorage to track login state
-// const tokenRef = ref(localStorage.getItem(TOKEN_LOCAL_STORAGE_KEY))
-// watch(tokenRef, (curr, prev) => {
-//   console.log('watcher, curr, prev, isLoggedIn', curr, prev, isLoggedIn.value)
-//   isLoggedIn.value = curr !== null
-// })
+const tokenRef = ref(localStorage.getItem(TOKEN_LOCAL_STORAGE_KEY))
+let storageHandler: ((e: CustomEvent<{ storage: string | null }>) => void) | null = null
+
+watch(tokenRef, (curr, prev) => {
+  console.debug('login state changed', curr !== null, 'from previous', prev !== null)
+  if (curr !== null && prev === null) {
+    isLoggedIn.value = true
+  } else if (curr === null && prev !== null) {
+    isLoggedIn.value = false
+  }
+})
 
 onMounted(() => {
   getIsLoggedIn().then((res) => (isLoggedIn.value = res))
+
+  // Listen to storage events for cross-tab updates
+  storageHandler = (event: CustomEvent<{ storage: string | null }>) => {
+    if (event.detail.storage === TOKEN_LOCAL_STORAGE_KEY) {
+      tokenRef.value = localStorage.getItem(TOKEN_LOCAL_STORAGE_KEY)
+    } else if (event.detail.storage === null) {
+      // Storage cleared, reset the token ref to null
+      tokenRef.value = null
+    }
+  }
+
+  window.addEventListener(LOCAL_STORAGE_UPDATE_KEY, storageHandler as EventListener)
+})
+
+onUnmounted(() => {
+  // Cleanup the event listener
+  if (window && storageHandler) {
+    window.removeEventListener(LOCAL_STORAGE_UPDATE_KEY, storageHandler as EventListener)
+  }
 })
 
 const router = useRouter()

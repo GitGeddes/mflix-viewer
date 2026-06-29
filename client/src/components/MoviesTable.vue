@@ -5,6 +5,8 @@ import PosterImage from './PosterImage.vue'
 import useMovies from '@/hooks/useMovies.ts'
 import useFilters from '@/hooks/useFilters.ts'
 import useGenres from '@/hooks/useGenres.ts'
+import { ref } from 'vue'
+import type { MovieWithWatchlist } from '@/services/api.ts'
 
 const router = useRouter()
 
@@ -32,9 +34,15 @@ const { movies, isLoading, addToWatchlist, removeFromWatchlist } = useMovies()
 
 const { hasFavoriteGenres } = useGenres()
 
+function sortWatchlists(a: MovieWithWatchlist, b: MovieWithWatchlist) {
+  if (a.isWatchlisted && !b.isWatchlisted) return -1
+  else if (!a.isWatchlisted && b.isWatchlisted) return 1
+  else return 0
+}
+
 // Headers for the data table
 const headers = [
-  { key: 'watchlist', title: 'Watchlist' },
+  { key: 'watchlist', title: 'Watchlist', sortRaw: sortWatchlists },
   { key: 'title', title: 'Title' },
   { key: 'year', title: 'Year' },
   { key: 'runtime', title: 'Runtime' },
@@ -42,8 +50,10 @@ const headers = [
   { key: 'type', title: 'Type' },
   { key: 'genres', title: 'Genres' },
   { key: 'imdb.rating', title: 'IMDB Rating' },
-  { key: 'poster', title: 'Poster' },
+  { key: 'poster', title: 'Poster', sortable: false },
 ]
+
+const sortBy = ref([{ key: 'watchlist', order: 'asc' as const, sortRaw: sortWatchlists }])
 
 function clickRow(event, row) {
   // TODO: Pass the movie as parameters to the individual movie page
@@ -105,6 +115,7 @@ function clickRow(event, row) {
   <v-card title="Movies" flat data-testid="title">
     <v-data-table
       :headers="headers"
+      :sort-by="sortBy"
       :items="movies"
       :search="filterChanged"
       :loading="isLoading"
@@ -138,7 +149,7 @@ function clickRow(event, row) {
       <!-- Customize certain aspects of each row -->
       <template v-slot:item="{ item }">
         <tr :key="`$${item._id}`">
-          <td>
+          <td :class="[{ 'bg-green-darken-2': item.isWatchlisted }]">
             <div class="d-flex justify-center" @click.stop="">
               <v-icon
                 v-if="item.isWatchlisted"
