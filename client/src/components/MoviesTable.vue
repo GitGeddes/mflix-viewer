@@ -1,10 +1,11 @@
 <script setup lang="ts">
-import { VCard } from 'vuetify/components'
 import TruncatedField from './TruncatedField.vue'
 import PosterImage from './PosterImage.vue'
 import { useRouter } from 'vue-router'
 import useMovies from '@/hooks/useMovies.ts'
 import useFilters from '@/hooks/useFilters.ts'
+import useGenres from '@/hooks/useGenres.ts'
+import type { Movie } from '@/services/api.ts'
 
 const router = useRouter()
 
@@ -29,6 +30,14 @@ const {
   enableYearFilter,
 } = useFilters()
 const { movies, isLoading, addToWatchlist, removeFromWatchlist } = useMovies()
+
+const { favoriteGenres } = useGenres()
+
+// Helper function to check if movie has any favorite genres
+function hasFavoriteGenres(movie: Movie): boolean {
+  if (!movie.genres) return false
+  return movie.genres.some((genre) => favoriteGenres.value.includes(genre))
+}
 
 // Headers for the data table
 const headers = [
@@ -133,43 +142,43 @@ function clickRow(event, row) {
         </div>
       </template>
 
-      <template #[`item.title`]="{ item }">
-        <!-- Account for very long titles -->
-        <TruncatedField :text="item.title" width="300"></TruncatedField>
-      </template>
+      <!-- Add row class for favorite genres -->
+      <template v-slot:item="{ item }">
+        <tr :key="`$${item._id}`" :class="[{ 'bg-blue-grey-darken-3': hasFavoriteGenres(item) }]">
+          <td>
+            <div class="d-flex justify-center" @click.stop="">
+              <v-icon
+                v-if="item.isWatchlisted"
+                color="medium-emphasis"
+                icon="mdi-playlist-remove"
+                @click="removeFromWatchlist(item._id)"
+              ></v-icon>
 
-      <template #[`item.rated`]="{ item }">
-        <!-- Account for "APPROVED" ratings being very wide -->
-        <TruncatedField :text="item.rated" width="110"></TruncatedField>
-      </template>
-
-      <template #[`item.genres`]="{ item }">
-        <!-- Account for the genre lists being long -->
-        <TruncatedField :text="item.genres?.join(', ')" width="200"></TruncatedField>
-      </template>
-
-      <template #[`item.poster`]="{ item }">
-        <PosterImage :poster="item.poster"></PosterImage>
-      </template>
-
-      <template #[`item.watchlist`]="{ item }">
-        <div class="d-flex justify-center" @click.stop="">
-          <v-icon
-            v-if="item.isWatchlisted"
-            color="medium-emphasis"
-            icon="mdi-playlist-remove"
-            size="small"
-            @click="removeFromWatchlist(item._id)"
-          ></v-icon>
-
-          <v-icon
-            v-else
-            color="medium-emphasis"
-            icon="mdi-playlist-plus"
-            size="small"
-            @click="addToWatchlist(item._id)"
-          ></v-icon>
-        </div>
+              <v-icon
+                v-else
+                color="medium-emphasis"
+                icon="mdi-playlist-plus"
+                @click="addToWatchlist(item._id)"
+              ></v-icon>
+            </div>
+          </td>
+          <td>
+            <TruncatedField :text="item.title" width="300"></TruncatedField>
+          </td>
+          <td>{{ item.year }}</td>
+          <td>{{ item.runtime }}</td>
+          <td>
+            <TruncatedField :text="item.rated" width="110"></TruncatedField>
+          </td>
+          <td>{{ item.type }}</td>
+          <td>
+            <TruncatedField :text="item.genres?.join(', ')" width="200"></TruncatedField>
+          </td>
+          <td>{{ item.imdb.rating }}</td>
+          <td>
+            <PosterImage :poster="item.poster"></PosterImage>
+          </td>
+        </tr>
       </template>
     </v-data-table>
   </v-card>

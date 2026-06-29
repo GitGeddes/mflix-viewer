@@ -1,6 +1,5 @@
 <script setup lang="ts">
 import { ref } from 'vue'
-import { VCard } from 'vuetify/components'
 import TruncatedField from './TruncatedField.vue'
 import PosterImage from './PosterImage.vue'
 import { useRouter } from 'vue-router'
