@@ -10,11 +10,75 @@ const SORT_TITLE: Sort = {
 
 var router = express.Router()
 
+export interface Movie {
+  awards: {
+    nominations: number
+    text: string
+    wins: number
+  }
+  cast: Array<string>
+  countries: Array<string>
+  directors: Array<string>
+  fullPlot?: string
+  genres?: Array<string>
+  imdb: {
+    id: number
+    rating: number
+    votes: number
+  }
+  languages: Array<string>
+  lastupdated: string
+  num_mflix_comments: number
+  plot: string
+  poster?: string
+  rated?: string
+  released: Date
+  runtime: number
+  title: string
+  tomatoes: {
+    boxOffice?: string
+    consensus?: string
+    critic?: {
+      meter: number
+      numReviews: number
+      rating: number
+    }
+    dvd?: Date
+    fresh?: number
+    lastUpdated: Date
+    production?: string
+    rotten?: number
+    viewer: {
+      meter: number
+      numReviews: number
+      rating: number
+    }
+    website?: string
+  }
+  type: 'movie'
+  writers: Array<string>
+  year: number
+}
+
+type WithWatchlist = {
+  isWatchlisted?: boolean
+}
+
+export type MovieWithWatchlist = Movie & WithWatchlist
+
+export type MoviesDictionary = {
+  [id: string]: MovieWithWatchlist
+}
+
 /** GET movies home page. */
 router.get('/', async function (req, res, next) {
-  let collection = await db.collection('movies')
+  let collection = await db.collection<Movie>('movies')
   let results = await collection.find().sort(SORT_TITLE).toArray()
-  res.status(200).send(results)
+  let moviesDict: MoviesDictionary = {}
+  results.forEach((movie) => {
+    moviesDict[movie._id.toString()] = movie
+  })
+  res.status(200).send(moviesDict)
 })
 
 // TODO: Pagination is unused
@@ -32,12 +96,17 @@ router.get('/page/:page', async function (req, res, next) {
 
 /** GET movie by id. */
 router.get('/:id', async function (req, res, next) {
-  let collection = await db.collection('movies')
+  let collection = await db.collection<Movie>('movies')
   // Match by the requested ID
   let query = { _id: new ObjectId(req.params.id) }
-  let result = await collection.findOne(query)
-  if (!result) res.status(404).send('Movie not found')
-  else res.status(200).send(result)
+  let movieResult = await collection.findOne(query)
+  if (!movieResult) {
+    res.status(404).send('Movie not found')
+    return
+  }
+  let moviesDict: MoviesDictionary = {}
+  moviesDict[movieResult._id.toString()] = movieResult
+  res.status(200).send(moviesDict)
 })
 
 async function getYearsAggregate() {
@@ -192,10 +261,10 @@ router.get('/aggregate/imdb', async function (req, res, next) {
 
 /** POST fetch list of movies by IDs */
 router.post('/', async function (req, res, next) {
-  let collection = db.collection('movies')
+  let collection = db.collection<Movie>('movies')
   try {
     // Need to ensure the IDs are proper MongoDB ObjectIds
-    const query = { _id: { $in: req.body.movies.map((val) => new ObjectId(val)) } }
+    const query = { _id: { $in: req.body.movies.map((val: string) => new ObjectId(val)) } }
     const result = await collection.find(query).toArray()
     res.status(200).json({ movies: result })
   } catch (error) {

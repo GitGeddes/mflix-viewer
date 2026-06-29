@@ -159,6 +159,7 @@ router.get('/favoriteGenres', async function (req, res) {
   }
 })
 
+// TODO: remove this and test buttons on user profile
 // POST watchlist to collection
 router.post('/watchlist', async function (req, res) {
   let collection = await db.collection('watchlists')
@@ -167,11 +168,48 @@ router.post('/watchlist', async function (req, res) {
     const existing = await collection.findOne(query)
     if (existing) {
       // Need to update existing document
-      const update = { $each: req.body }
-      console.log('movies?', req.body)
-      // collection.updateOne(query,
-      //   { $addToSet: { movies: { $each: req.body }}}
-      // )
+      collection.updateOne(query, { $addToSet: { movies: { $each: req.body } } })
+      res.status(200).json({ message: 'success' })
+    } else {
+      // Create document
+      const result = await collection.insertOne({ ...query, ...req.body })
+      console.log('result after inserting', result)
+      res.status(200).json({ message: 'success' })
+    }
+  } catch (error) {
+    res.status(500).json({ error: 'Internal server error' })
+  }
+})
+
+router.put('/addToWatchlist', async function (req, res) {
+  let collection = await db.collection('watchlists')
+  try {
+    const query = { _id: new ObjectId(req.user.userId) }
+    const existing = await collection.findOne(query)
+    if (existing) {
+      // Need to update existing document
+      collection.updateOne(query, { $addToSet: { movies: { $each: req.body.movies } } })
+      res.status(200).json({ message: 'success' })
+    } else {
+      // Create document
+      const result = await collection.insertOne({ ...query, ...req.body })
+      console.log('result after inserting', result)
+      res.status(200).json({ message: 'success' })
+    }
+  } catch (error) {
+    res.status(500).json({ error: 'Internal server error' })
+  }
+})
+
+router.post('/removeFromWatchlist', async function (req, res) {
+  let collection = await db.collection('watchlists')
+  try {
+    const query = { _id: new ObjectId(req.user.userId) }
+    const existing = await collection.findOne(query)
+    if (existing) {
+      // Need to update existing document
+      console.log('movies to remove?', req.body)
+      collection.updateOne(query, { $pull: { movies: { $in: req.body.movies } } })
       res.status(200).json({ message: 'success' })
     } else {
       // Create document

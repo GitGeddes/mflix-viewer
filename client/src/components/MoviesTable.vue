@@ -1,5 +1,15 @@
 <script setup lang="ts">
-import { getAllAggregates, getAllMovies, type Movie } from '@/services/api'
+import {
+  getAllAggregates,
+  getAllMovies,
+  getWatchlist,
+  postFetchMovies,
+  postRemoveFromWatchlist,
+  putAddToWatchlist,
+  type Movie,
+  type MoviesDictionary,
+  type MovieWithWatchlist,
+} from '@/services/api'
 import { computed, onMounted, ref, type Ref } from 'vue'
 import { VCard } from 'vuetify/components'
 import TruncatedField from './TruncatedField.vue'
@@ -38,6 +48,7 @@ const imdbFilterOptions: Ref<[number, number]> = ref([0, 0])
 
 // Headers for the data table
 const headers = [
+  { key: 'actions', title: 'Actions' },
   { key: 'title', title: 'Title' },
   { key: 'year', title: 'Year' },
   { key: 'runtime', title: 'Runtime' },
@@ -48,13 +59,17 @@ const headers = [
   { key: 'poster', title: 'Poster' },
 ]
 
-const movies: Ref<Movie[]> = ref([])
+const moviesDict: Ref<MoviesDictionary> = ref({})
+
+const movies: Ref<MovieWithWatchlist[]> = computed(() => Object.values(moviesDict.value))
 
 function boolToString(bool: boolean) {
   if (bool) return 'true'
   else return ''
 }
 
+// Add all the filter toggles as strings to activate the search function in
+// v-data-table without using an Array filter method on the movies list.
 const filterChanged = computed(() => {
   return (
     search.value +
@@ -79,6 +94,45 @@ onMounted(() => {
   getAggregates()
 })
 
+// Get all of the movies and update the data table.
+async function fetchWatchlist() {
+  return getWatchlist().then(async (res) => {
+    if (!res) {
+      console.error('Error loading watchlist')
+      return null
+    }
+    if (res.watchlist) {
+      // Only has the IDs, fetch the actual movie objects
+      const fetchedMovies = await postFetchMovies({ movies: res.watchlist.movies })
+      if (fetchedMovies) {
+        return fetchedMovies
+      }
+    }
+    return null
+  })
+}
+
+// Get all of the movies and update the data table.
+function getMovies() {
+  getAllMovies().then((res) => {
+    if (!res) {
+      console.error('Error loading movies')
+      return
+    }
+    moviesDict.value = res
+    fetchWatchlist().then((res) => {
+      if (!res) return
+      Object.values(res.movies).forEach((movie) => {
+        movie['isWatchlisted'] = true
+        moviesDict.value[movie['_id']] = movie
+      })
+      // Reset the loading state
+      isLoading.value = false
+    })
+  })
+}
+
+// Get all of the aggregate values for the table filters
 async function getAggregates() {
   const result = await getAllAggregates()
   if (result) {
@@ -95,7 +149,8 @@ async function getAggregates() {
 
     genreFilterOptions.value = genreAggregate.sort()
 
-    // Some entries don't parse correctly into a number, force the range to be 0-10
+    // Some entries don't parse correctly into a number, force the range to be 0-10,
+    // because that's the normal range anyways.
     // imdbFilterOptions.value = [result.minIMDBRating, result.maxIMDBRating]
     imdbFilterOptions.value = [0, 10]
     imdbFilter.value = imdbFilterOptions.value
@@ -121,7 +176,6 @@ function runtimeColumnFilter(item: Movie): boolean {
 function ratedColumnFilter(item: Movie, rateds: string[]): boolean {
   if (!enableRatedFilter.value) return true
 
-  // Check if the item's rated value is in the enabled ratings list
   const itemRated = item.rated?.toString() || ''
   return rateds.includes(itemRated)
 }
@@ -129,9 +183,7 @@ function ratedColumnFilter(item: Movie, rateds: string[]): boolean {
 function genreColumnFilter(item: Movie, genres: string[]): boolean {
   if (!enableGenreFilter.value) return true
 
-  // Check if any of the item's genres are in the enabled genres list
   const itemGenres = item.genres || []
-
   return genres.every((genre: string) => itemGenres.some((g) => g.includes(genre)))
 }
 
@@ -159,19 +211,6 @@ function customFilter(item: Movie): boolean {
   )
 }
 
-// Get all of the movies and update the data table.
-function getMovies() {
-  getAllMovies().then((res) => {
-    if (!res) {
-      console.error('Error loading movies')
-      return
-    }
-    movies.value = res
-    // Reset the loading state
-    isLoading.value = false
-  })
-}
-
 function searchFilter(value: string, query: string, item) {
   const tempValue = search.value
   if (!tempValue || tempValue.trim() === '') return customFilter(item.columns)
@@ -190,6 +229,28 @@ function clickRow(event, row) {
   // TODO: Pass the movie as parameters to the individual movie page
   // router.push({ path: '/movies/' + row.item._id, params: row.item })
   router.push('/movies/' + row.item._id)
+}
+
+async function addToWatchlist(id: string) {
+  console.log('add to watchlist', id)
+  const result = await putAddToWatchlist({ movies: [id] })
+  if (result && result.message === 'success') {
+    const tempMovie = moviesDict.value[id]
+    if (!tempMovie) return
+    tempMovie.isWatchlisted = true
+    moviesDict.value[id] = tempMovie
+  }
+}
+
+async function removeFromWatchlist(id: string) {
+  console.log('remove from watchlist', id)
+  const result = await postRemoveFromWatchlist({ movies: [id] })
+  if (result && result.message === 'success') {
+    const tempMovie = moviesDict.value[id]
+    if (!tempMovie) return
+    tempMovie.isWatchlisted = false
+    moviesDict.value[id] = tempMovie
+  }
 }
 </script>
 
@@ -293,6 +354,26 @@ function clickRow(event, row) {
 
       <template #[`item.poster`]="{ item }">
         <PosterImage :poster="item.poster"></PosterImage>
+      </template>
+
+      <template #[`item.actions`]="{ item }">
+        <div class="d-flex ga-2 justify-end" @click.stop="">
+          <v-icon
+            v-if="item.isWatchlisted"
+            color="medium-emphasis"
+            icon="mdi-playlist-remove"
+            size="small"
+            @click="removeFromWatchlist(item._id)"
+          ></v-icon>
+
+          <v-icon
+            v-else
+            color="medium-emphasis"
+            icon="mdi-playlist-plus"
+            size="small"
+            @click="addToWatchlist(item._id)"
+          ></v-icon>
+        </div>
       </template>
     </v-data-table>
   </v-card>

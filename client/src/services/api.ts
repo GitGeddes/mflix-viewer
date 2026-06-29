@@ -36,6 +36,28 @@ async function postRequestFactory<T, V>(url: string, body: T): Promise<V | null>
   }
 }
 
+// Quickly make PUT requests
+async function putRequestFactory<T, V>(url: string, body: T): Promise<V | null> {
+  try {
+    const response = await api.put(url, body)
+    return response.data
+  } catch (error) {
+    console.error('Error in PUT request:', error)
+    return null
+  }
+}
+
+// Quickly make DELETE requests
+async function deleteRequestFactory<T>(url: string): Promise<T | null> {
+  try {
+    const response = await api.delete(url)
+    return response.data
+  } catch (error) {
+    console.error('Error in DELETE request:', error)
+    return null
+  }
+}
+
 //#region Movies API
 export interface Movie {
   _id: string
@@ -88,6 +110,16 @@ export interface Movie {
   year: number
 }
 
+type WithWatchlist = {
+  isWatchlisted?: boolean
+}
+
+export type MovieWithWatchlist = Movie & WithWatchlist
+
+export type MoviesDictionary = {
+  [id: string]: MovieWithWatchlist
+}
+
 interface YearAggregate {
   _id: Object
   maxYear: number
@@ -119,16 +151,16 @@ export interface AllAggregates {
 }
 
 // Movie endpoints
-export async function getAllMovies(): Promise<Movie[] | null> {
-  return getRequestFactory<Movie[]>(API_URL + 'movies')
+export async function getAllMovies(): Promise<MoviesDictionary | null> {
+  return getRequestFactory<MoviesDictionary>(API_URL + 'movies')
 }
 
 export async function getMoviesByPage(page: number): Promise<Movie[] | null> {
   return getRequestFactory<Movie[]>(API_URL + `movies/page/${page}`)
 }
 
-export async function getMovieById(id: string): Promise<Movie | null> {
-  return getRequestFactory<Movie>(API_URL + `movies/${id}`)
+export async function getMovieById(id: string): Promise<MoviesDictionary | null> {
+  return getRequestFactory<MoviesDictionary>(API_URL + `movies/${id}`)
 }
 
 export async function getAllAggregates(): Promise<AllAggregates | null> {
@@ -244,11 +276,19 @@ export async function getFavoriteGenres() {
   return getRequestFactory<SaveFavoriteGenresBody & WithDocumentId>(API_URL + 'user/favoriteGenres')
 }
 
-interface AddToWatchlistBody {
+interface WatchlistBody {
   movies: Movie['_id'][]
 }
-export async function postAddToWatchlist(body: AddToWatchlistBody) {
-  return postRequestFactory<AddToWatchlistBody, unknown>(API_URL + 'user/watchlist', body)
+export async function postAddToWatchlist(body: WatchlistBody) {
+  return postRequestFactory<WatchlistBody, unknown>(API_URL + 'user/watchlist', body)
+}
+
+export async function putAddToWatchlist(body: WatchlistBody) {
+  return putRequestFactory<WatchlistBody, unknown>(API_URL + 'user/addToWatchlist', body)
+}
+
+export async function postRemoveFromWatchlist(body: WatchlistBody) {
+  return postRequestFactory<WatchlistBody, unknown>(API_URL + 'user/removeFromWatchlist', body)
 }
 
 interface FetchWatchlistResult {
@@ -262,6 +302,9 @@ interface FetchMoviesBody {
   movies: string[] // Movie IDs
 }
 export async function postFetchMovies(body: FetchMoviesBody) {
-  return postRequestFactory<FetchMoviesBody, { movies: Movie[] }>(API_URL + 'movies/', body)
+  return postRequestFactory<FetchMoviesBody, { movies: MoviesDictionary }>(
+    API_URL + 'movies/',
+    body,
+  )
 }
 //#endregion
