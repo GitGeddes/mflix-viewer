@@ -15,7 +15,6 @@ async function onClickCreate() {
     username: username.value,
     displayname: displayname.value,
   })
-  console.log('create user response', response)
 }
 
 async function onClickSubmit() {

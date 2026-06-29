@@ -1,10 +1,10 @@
 <script setup lang="ts">
-import { getWatchlist, postFetchMovies, type Movie } from '@/services/api'
-import { onMounted, ref, type Ref } from 'vue'
+import { ref } from 'vue'
 import { VCard } from 'vuetify/components'
 import TruncatedField from './TruncatedField.vue'
 import PosterImage from './PosterImage.vue'
 import { useRouter } from 'vue-router'
+import useWatchlist from '@/hooks/useWatchlist.ts'
 
 const router = useRouter()
 
@@ -22,38 +22,9 @@ const headers = [
   { key: 'poster', title: 'Poster' },
 ]
 
-const movies: Ref<Movie[]> = ref([])
-
-// Show the loading text in the data table.
-const isLoading = ref(true)
-
-// Initialize movies table on load
-onMounted(() => {
-  fetchWatchlist()
-})
-
-// Get all of the movies and update the data table.
-function fetchWatchlist() {
-  getWatchlist().then(async (res) => {
-    if (!res) {
-      console.error('Error loading movies')
-      return
-    }
-    console.log('result', res)
-    if (res.watchlist) {
-      // Only has the IDs, fetch the actual movie objects
-      const fetchedMovies = await postFetchMovies({ movies: res.watchlist.movies })
-      if (fetchedMovies) {
-        movies.value = fetchedMovies.movies
-      }
-    }
-    // Reset the loading state
-    isLoading.value = false
-  })
-}
+const { watchlist, isLoading } = useWatchlist()
 
 function clickRow(event, row) {
-  console.log('row clicked', row.item._id)
   // TODO: Pass the movie as parameters to the individual movie page
   // router.push({ path: '/movies/' + row.item._id, params: row.item })
   router.push('/movies/' + row.item._id)
@@ -64,7 +35,7 @@ function clickRow(event, row) {
   <v-card title="Movies" flat data-testid="title">
     <v-data-table
       :headers="headers"
-      :items="movies"
+      :items="watchlist"
       :search="search"
       :loading="isLoading"
       :filter-keys="['title']"

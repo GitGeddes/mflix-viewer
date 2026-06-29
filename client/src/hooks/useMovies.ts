@@ -11,7 +11,6 @@ import { computed, onMounted, ref, type Ref } from 'vue'
 
 export default function useMovies() {
   const moviesDict: Ref<MoviesDictionary> = ref({})
-
   const movies: Ref<MovieWithWatchlist[]> = computed(() => Object.values(moviesDict.value))
 
   // Show the loading text in the data table.
@@ -61,7 +60,6 @@ export default function useMovies() {
   }
 
   async function addToWatchlist(id: string) {
-    console.log('add to watchlist', id)
     const result = await putAddToWatchlist({ movies: [id] })
     if (result && result.message === 'success') {
       const tempMovie = moviesDict.value[id]
@@ -72,7 +70,6 @@ export default function useMovies() {
   }
 
   async function removeFromWatchlist(id: string) {
-    console.log('remove from watchlist', id)
     const result = await postRemoveFromWatchlist({ movies: [id] })
     if (result && result.message === 'success') {
       const tempMovie = moviesDict.value[id]

@@ -44,7 +44,6 @@ const headers = [
 ]
 
 function clickRow(event, row) {
-  console.log('row clicked', row.item._id)
   // TODO: Pass the movie as parameters to the individual movie page
   // router.push({ path: '/movies/' + row.item._id, params: row.item })
   router.push('/movies/' + row.item._id)

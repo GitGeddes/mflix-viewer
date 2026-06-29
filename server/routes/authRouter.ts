@@ -35,8 +35,6 @@ router.post('/createUser', async function (req, res) {
 // Partially AI coded, had to clean it up
 // POST login request
 router.post('/login', async function (req, res) {
-  console.log('login request', req.body)
-
   const { email, password } = req.body
   let collection = await db.collection('users')
 
@@ -122,9 +120,8 @@ router.post('/logout', async function (req, res) {
       token: token,
       exp: req.user.exp, // Save expiration timestamps to potentially delete later
     })
-    console.log('session id', req.session.id, denyEntry.insertedId)
     req.session.destroy(() => {
-      console.log('session destroyed')
+      console.debug('session destroyed')
     })
     res.status(200).json({ message: 'You are logged out!', ok: true })
   } catch (error) {
@@ -173,7 +170,6 @@ router.post('/watchlist', async function (req, res) {
     } else {
       // Create document
       const result = await collection.insertOne({ ...query, ...req.body })
-      console.log('result after inserting', result)
       res.status(200).json({ message: 'success' })
     }
   } catch (error) {
@@ -193,7 +189,6 @@ router.put('/addToWatchlist', async function (req, res) {
     } else {
       // Create document
       const result = await collection.insertOne({ ...query, ...req.body })
-      console.log('result after inserting', result)
       res.status(200).json({ message: 'success' })
     }
   } catch (error) {
@@ -208,13 +203,11 @@ router.post('/removeFromWatchlist', async function (req, res) {
     const existing = await collection.findOne(query)
     if (existing) {
       // Need to update existing document
-      console.log('movies to remove?', req.body)
       collection.updateOne(query, { $pull: { movies: { $in: req.body.movies } } })
       res.status(200).json({ message: 'success' })
     } else {
       // Create document
       const result = await collection.insertOne({ ...query, ...req.body })
-      console.log('result after inserting', result)
       res.status(200).json({ message: 'success' })
     }
   } catch (error) {
@@ -228,7 +221,6 @@ router.get('/watchlist', async function (req, res) {
   try {
     const query = { _id: new ObjectId(req.user.userId) }
     const existing = await collection.findOne(query)
-    console.log('existing watchlist', existing)
     res.status(200).json({ watchlist: existing })
   } catch (error) {
     res.status(500).json({ error: 'Internal server error' })

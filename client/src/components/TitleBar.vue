@@ -33,7 +33,6 @@ function navigateToUser() {
 
 async function getIsLoggedIn() {
   const result = await getSelfUser()
-  console.log('logged in?', result !== null)
   return result !== null
 }
 </script>
