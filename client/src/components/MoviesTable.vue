@@ -40,6 +40,8 @@ function sortWatchlists(a: MovieWithWatchlist, b: MovieWithWatchlist) {
   else return 0
 }
 
+const sortBy = ref([{ key: 'watchlist', order: 'asc' as const, sortRaw: sortWatchlists }])
+
 // Headers for the data table
 const headers = [
   { key: 'watchlist', title: 'Watchlist', sortRaw: sortWatchlists },
@@ -53,12 +55,10 @@ const headers = [
   { key: 'poster', title: 'Poster', sortable: false },
 ]
 
-const sortBy = ref([{ key: 'watchlist', order: 'asc' as const, sortRaw: sortWatchlists }])
-
-function clickRow(event, row) {
+function clickRow(row: MovieWithWatchlist) {
   // TODO: Pass the movie as parameters to the individual movie page
   // router.push({ path: '/movies/' + row.item._id, params: row.item })
-  router.push('/movies/' + row.item._id)
+  router.push('/movies/' + row._id)
 }
 </script>
 
@@ -148,7 +148,7 @@ function clickRow(event, row) {
 
       <!-- Customize certain aspects of each row -->
       <template v-slot:item="{ item }">
-        <tr :key="`$${item._id}`">
+        <tr :key="`$${item._id}`" @click="clickRow(item)">
           <td :class="[{ 'bg-green-darken-2': item.isWatchlisted }]">
             <div class="d-flex justify-center" @click.stop="">
               <v-icon
