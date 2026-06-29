@@ -66,6 +66,34 @@ async function getRuntimeAggregate() {
   return aggregate[0]
 }
 
+async function getRuntimeAggregateByType() {
+  let collection = db.collection('movies')
+  let query = {
+    $group: {
+      _id: '$type', // Groups by 'series' and 'movie'
+      maxRuntime: { $max: '$runtime' },
+      minRuntime: { $min: '$runtime' },
+    },
+  }
+  let aggregate = await collection.aggregate([query]).toArray()
+  // Reduce the array into one object dictionary with they keys "movie" and "series"
+  const minMaxObj = Object.entries(aggregate)
+    .map((val) => {
+      const obj = val[1]
+      return {
+        [obj._id as string]: {
+          maxRuntime: obj.maxRuntime,
+          minRuntime: obj.minRuntime,
+        },
+      }
+    })
+    .reduce((prev, curr) => {
+      prev[Object.keys(curr)[0]] = Object.values(curr)[0]
+      return prev
+    })
+  return minMaxObj
+}
+
 async function getRatedAggregate() {
   let collection = db.collection('movies')
   const cursor = await collection.distinct('rated')
@@ -120,59 +148,42 @@ router.get('/aggregate/all', async function (req, res, next) {
   res.status(200).send(aggregates)
 })
 
+// Unused
 /** GET maximum and minimum of the release year across the Movies collection */
 router.get('/aggregate/year', async function (req, res, next) {
   let yearsAggregate = await getYearsAggregate()
   res.status(200).send(yearsAggregate)
 })
 
+// Unused
 /** GET maximum and minimum of the runtime across the Movies collection */
 router.get('/aggregate/runtime', async function (req, res, next) {
   let runtimeAggregate = await getRuntimeAggregate()
   res.status(200).send(runtimeAggregate)
 })
 
+// Unused
 /** GET maximum and minimum of the runtime across the Movies collection, grouped by type */
 router.get('/aggregate/runtimeByType', async function (req, res, next) {
-  let collection = db.collection('movies')
-  let query = {
-    $group: {
-      _id: '$type', // Groups by 'series' and 'movie'
-      maxRuntime: { $max: '$runtime' },
-      minRuntime: { $min: '$runtime' },
-    },
-  }
-  let aggregate = await collection.aggregate([query]).toArray()
-  // Reduce the array into one object dictionary with they keys "movie" and "series"
-  const minMaxObj = Object.entries(aggregate)
-    .map((val) => {
-      const obj = val[1]
-      return {
-        [obj._id as string]: {
-          maxRuntime: obj.maxRuntime,
-          minRuntime: obj.minRuntime,
-        },
-      }
-    })
-    .reduce((prev, curr) => {
-      prev[Object.keys(curr)[0]] = Object.values(curr)[0]
-      return prev
-    })
+  const minMaxObj = await getRuntimeAggregateByType()
   res.status(200).send(minMaxObj)
 })
 
+// Unused
 /** GET all distinct values for the Rated field */
 router.get('/aggregate/rated', async function (req, res, next) {
   let ratedAggregate = await getRatedAggregate()
   res.status(200).send(ratedAggregate)
 })
 
+// Unused
 /** GET all distinct values for the Genres field */
 router.get('/aggregate/genre', async function (req, res, next) {
   let genreAggregate = await getGenreAggregate()
   res.status(200).send(genreAggregate)
 })
 
+// Unused
 /** GET maximum and minimum of the IMDB rating across the Movies collection */
 router.get('/aggregate/imdb', async function (req, res, next) {
   let imdbAggregate = await getImdbAggregate()

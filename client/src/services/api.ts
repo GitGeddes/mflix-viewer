@@ -135,26 +135,32 @@ export async function getAllAggregates(): Promise<AllAggregates | null> {
   return getRequestFactory(API_URL + 'movies/aggregate/all')
 }
 
+// Unused
 export async function getYearRange(): Promise<YearAggregate | null> {
   return getRequestFactory(API_URL + 'movies/aggregate/year')
 }
 
+// Unused
 export async function getRuntimeRange(): Promise<RuntimeAggregate | null> {
   return getRequestFactory(API_URL + 'movies/aggregate/runtime')
 }
 
+// Unused
 export async function getMaxRuntimeByType() {
   return getRequestFactory(API_URL + 'movies/aggregate/runtimeByType')
 }
 
+// Unused
 export async function getDistinctRateds(): Promise<RatedAggregate | null> {
   return getRequestFactory(API_URL + 'movies/aggregate/rated')
 }
 
+// Unused
 export async function getDistinctGenres(): Promise<GenreAggregate | null> {
   return getRequestFactory(API_URL + 'movies/aggregate/genre')
 }
 
+// Unused
 export async function getImdbRatingRange(): Promise<ImdbAggregate | null> {
   return getRequestFactory(API_URL + 'movies/aggregate/imdb')
 }
