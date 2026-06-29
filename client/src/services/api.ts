@@ -14,6 +14,10 @@ api.interceptors.request.use((config) => {
   return config
 })
 
+interface ResponseMessage {
+  message: string
+}
+
 // Quickly make GET requests
 async function getRequestFactory<T>(url: string): Promise<T | null> {
   try {
@@ -284,11 +288,14 @@ export async function postAddToWatchlist(body: WatchlistBody) {
 }
 
 export async function putAddToWatchlist(body: WatchlistBody) {
-  return putRequestFactory<WatchlistBody, unknown>(API_URL + 'user/addToWatchlist', body)
+  return putRequestFactory<WatchlistBody, ResponseMessage>(API_URL + 'user/addToWatchlist', body)
 }
 
 export async function postRemoveFromWatchlist(body: WatchlistBody) {
-  return postRequestFactory<WatchlistBody, unknown>(API_URL + 'user/removeFromWatchlist', body)
+  return postRequestFactory<WatchlistBody, ResponseMessage>(
+    API_URL + 'user/removeFromWatchlist',
+    body,
+  )
 }
 
 interface FetchWatchlistResult {

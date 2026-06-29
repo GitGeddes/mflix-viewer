@@ -1,5 +1,5 @@
 <script setup lang="ts">
-import { getWatchlist, postAddToWatchlist, postFetchMovies, type Movie } from '@/services/api'
+import { getWatchlist, postFetchMovies, type Movie } from '@/services/api'
 import { onMounted, ref, type Ref } from 'vue'
 import { VCard } from 'vuetify/components'
 import TruncatedField from './TruncatedField.vue'
@@ -52,22 +52,6 @@ function fetchWatchlist() {
   })
 }
 
-function addToWatchlist() {
-  postAddToWatchlist({
-    movies: ['573a1390f29313caabcd42e8', '573a1390f29313caabcd446f', '573a1390f29313caabcd4803'],
-  }).then((res) => {
-    console.log('watchlist result', res)
-  })
-}
-
-function fetchABunch() {
-  postFetchMovies({
-    movies: ['573a1390f29313caabcd42e8', '573a1390f29313caabcd446f', '573a1390f29313caabcd4803'],
-  }).then((result) => {
-    console.log('in watchlist', result)
-  })
-}
-
 function clickRow(event, row) {
   console.log('row clicked', row.item._id)
   // TODO: Pass the movie as parameters to the individual movie page
@@ -77,9 +61,6 @@ function clickRow(event, row) {
 </script>
 
 <template>
-  <v-btn @click="fetchWatchlist">Fetch watchlist</v-btn>
-  <v-btn @click="fetchABunch">Fetch movies</v-btn>
-  <v-btn @click="addToWatchlist">Add movies</v-btn>
   <v-card title="Movies" flat data-testid="title">
     <v-data-table
       :headers="headers"
