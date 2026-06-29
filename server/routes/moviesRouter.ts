@@ -40,8 +40,7 @@ router.get('/:id', async function (req, res, next) {
   else res.status(200).send(result)
 })
 
-/** GET maximum and minimum of the release year across the Movies collection */
-router.get('/aggregate/year', async function (req, res, next) {
+async function getYearsAggregate() {
   let collection = db.collection('movies')
   let query = {
     $group: {
@@ -51,11 +50,10 @@ router.get('/aggregate/year', async function (req, res, next) {
     },
   }
   let aggregate = await collection.aggregate([query]).toArray()
-  res.status(200).send(aggregate[0])
-})
+  return aggregate[0]
+}
 
-/** GET maximum and minimum of the runtime across the Movies collection */
-router.get('/aggregate/runtime', async function (req, res, next) {
+async function getRuntimeAggregate() {
   let collection = db.collection('movies')
   let query = {
     $group: {
@@ -65,7 +63,73 @@ router.get('/aggregate/runtime', async function (req, res, next) {
     },
   }
   let aggregate = await collection.aggregate([query]).toArray()
-  res.status(200).send(aggregate[0])
+  return aggregate[0]
+}
+
+async function getRatedAggregate() {
+  let collection = db.collection('movies')
+  const cursor = await collection.distinct('rated')
+  return cursor
+}
+
+async function getGenreAggregate() {
+  let collection = db.collection('movies')
+  const aggregate = await collection
+    .aggregate([
+      { $unwind: '$genres' }, // Unwind nested genre array
+      { $group: { _id: null, distinctGenres: { $addToSet: '$genres' } } },
+    ])
+    .toArray()
+  return aggregate[0].distinctGenres
+}
+
+async function getImdbAggregate() {
+  let collection = db.collection('movies')
+  const aggregate = await collection
+    .aggregate([
+      {
+        $group: {
+          _id: null,
+          maxIMDBRating: { $max: '$imdb.rating' },
+          minIMDBRating: { $min: '$imdb.rating' },
+        },
+      },
+    ])
+    .toArray()
+  return aggregate[0]
+}
+
+async function getAllAggregates() {
+  let yearsAggregate = await getYearsAggregate()
+  let runtimeAggregate = await getRuntimeAggregate()
+  let ratedAggregate = await getRatedAggregate()
+  let genreAggregate = await getGenreAggregate()
+  let imdbAggregate = await getImdbAggregate()
+  return {
+    yearsAggregate,
+    runtimeAggregate,
+    ratedAggregate,
+    genreAggregate,
+    imdbAggregate,
+  }
+}
+
+/** GET all aggregates for each field */
+router.get('/aggregate/all', async function (req, res, next) {
+  let aggregates = await getAllAggregates()
+  res.status(200).send(aggregates)
+})
+
+/** GET maximum and minimum of the release year across the Movies collection */
+router.get('/aggregate/year', async function (req, res, next) {
+  let yearsAggregate = await getYearsAggregate()
+  res.status(200).send(yearsAggregate)
+})
+
+/** GET maximum and minimum of the runtime across the Movies collection */
+router.get('/aggregate/runtime', async function (req, res, next) {
+  let runtimeAggregate = await getRuntimeAggregate()
+  res.status(200).send(runtimeAggregate)
 })
 
 /** GET maximum and minimum of the runtime across the Movies collection, grouped by type */
@@ -99,38 +163,20 @@ router.get('/aggregate/runtimeByType', async function (req, res, next) {
 
 /** GET all distinct values for the Rated field */
 router.get('/aggregate/rated', async function (req, res, next) {
-  let collection = db.collection('movies')
-  const cursor = await collection.distinct('rated')
-  res.status(200).send(cursor)
+  let ratedAggregate = await getRatedAggregate()
+  res.status(200).send(ratedAggregate)
 })
 
 /** GET all distinct values for the Genres field */
 router.get('/aggregate/genre', async function (req, res, next) {
-  let collection = db.collection('movies')
-  const aggregate = await collection
-    .aggregate([
-      { $unwind: '$genres' }, // Unwind nested genre array
-      { $group: { _id: null, distinctGenres: { $addToSet: '$genres' } } },
-    ])
-    .toArray()
-  res.status(200).send(aggregate[0].distinctGenres)
+  let genreAggregate = await getGenreAggregate()
+  res.status(200).send(genreAggregate)
 })
 
 /** GET maximum and minimum of the IMDB rating across the Movies collection */
 router.get('/aggregate/imdb', async function (req, res, next) {
-  let collection = db.collection('movies')
-  const aggregate = await collection
-    .aggregate([
-      {
-        $group: {
-          _id: null,
-          maxIMDBRating: { $max: '$imdb.rating' },
-          minIMDBRating: { $min: '$imdb.rating' },
-        },
-      },
-    ])
-    .toArray()
-  res.status(200).send(aggregate[0])
+  let imdbAggregate = await getImdbAggregate()
+  res.status(200).send(imdbAggregate)
 })
 
 /** POST fetch list of movies by IDs */

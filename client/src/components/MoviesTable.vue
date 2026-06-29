@@ -1,13 +1,5 @@
 <script setup lang="ts">
-import {
-  getAllMovies,
-  getDistinctGenres,
-  getDistinctRateds,
-  getImdbRatingRange,
-  getRuntimeRange,
-  getYearRange,
-  type Movie,
-} from '@/services/api'
+import { getAllAggregates, getAllMovies, type Movie } from '@/services/api'
 import { computed, onMounted, ref, type Ref } from 'vue'
 import { VCard } from 'vuetify/components'
 import TruncatedField from './TruncatedField.vue'
@@ -82,14 +74,33 @@ onMounted(() => {
   getMovies()
 })
 
+// Populate all filter fields
 onMounted(() => {
-  // Populate all filter fields
-  getYears()
-  getAllRateds()
-  getRuntimes()
-  getIMDBRange()
-  getAllGenres()
+  getAggregates()
 })
+
+async function getAggregates() {
+  const result = await getAllAggregates()
+  if (result) {
+    const { yearsAggregate, runtimeAggregate, ratedAggregate, genreAggregate, imdbAggregate } =
+      result
+
+    yearFilterOptions.value = [yearsAggregate.minYear, yearsAggregate.maxYear]
+    yearFilter.value = yearFilterOptions.value
+
+    runtimeFilterOptions.value = [runtimeAggregate.minRuntime, runtimeAggregate.maxRuntime]
+    runtimeFilter.value = runtimeFilterOptions.value
+
+    ratedFilterOptions.value = ratedAggregate.sort()
+
+    genreFilterOptions.value = genreAggregate.sort()
+
+    // Some entries don't parse correctly into a number, force the range to be 0-10
+    // imdbFilterOptions.value = [result.minIMDBRating, result.maxIMDBRating]
+    imdbFilterOptions.value = [0, 10]
+    imdbFilter.value = imdbFilterOptions.value
+  }
+}
 
 // Column filter functions written by AI
 // Custom filter functions for each column
@@ -172,46 +183,6 @@ function searchFilter(value: string, query: string, item) {
     value.indexOf(tempValue) !== -1 &&
     customFilter(item.columns)
   )
-}
-
-async function getYears() {
-  const result = await getYearRange()
-  if (result) {
-    yearFilterOptions.value = [result.minYear, result.maxYear]
-    yearFilter.value = yearFilterOptions.value
-  }
-}
-
-async function getAllRateds() {
-  const result = await getDistinctRateds()
-  if (result) {
-    ratedFilterOptions.value = result.sort()
-  }
-}
-
-async function getRuntimes() {
-  const result = await getRuntimeRange()
-  if (result) {
-    runtimeFilterOptions.value = [result.minRuntime, result.maxRuntime]
-    runtimeFilter.value = runtimeFilterOptions.value
-  }
-}
-
-async function getIMDBRange() {
-  const result = await getImdbRatingRange()
-  if (result) {
-    // Some entries don't parse correctly into a number, force the range to be 0-10
-    // imdbFilterOptions.value = [result.minIMDBRating, result.maxIMDBRating]
-    imdbFilterOptions.value = [0, 10]
-    imdbFilter.value = imdbFilterOptions.value
-  }
-}
-
-async function getAllGenres() {
-  const result = await getDistinctGenres()
-  if (result) {
-    genreFilterOptions.value = result.sort()
-  }
 }
 
 function clickRow(event, row) {

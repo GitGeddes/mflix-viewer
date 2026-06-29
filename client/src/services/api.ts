@@ -88,6 +88,36 @@ export interface Movie {
   year: number
 }
 
+interface YearAggregate {
+  _id: Object
+  maxYear: number
+  minYear: number
+}
+
+interface RuntimeAggregate {
+  _id: Object
+  maxRuntime: number
+  minRuntime: number
+}
+
+type RatedAggregate = string[]
+
+type GenreAggregate = string[]
+
+interface ImdbAggregate {
+  _id: Object
+  maxIMDBRating: number
+  minIMDBRating: number
+}
+
+export interface AllAggregates {
+  yearsAggregate: YearAggregate
+  runtimeAggregate: RuntimeAggregate
+  ratedAggregate: RatedAggregate
+  genreAggregate: GenreAggregate
+  imdbAggregate: ImdbAggregate
+}
+
 // Movie endpoints
 export async function getAllMovies(): Promise<Movie[] | null> {
   return getRequestFactory<Movie[]>(API_URL + 'movies')
@@ -101,19 +131,15 @@ export async function getMovieById(id: string): Promise<Movie | null> {
   return getRequestFactory<Movie>(API_URL + `movies/${id}`)
 }
 
-export async function getYearRange(): Promise<{
-  _id: Object
-  maxYear: number
-  minYear: number
-} | null> {
+export async function getAllAggregates(): Promise<AllAggregates | null> {
+  return getRequestFactory(API_URL + 'movies/aggregate/all')
+}
+
+export async function getYearRange(): Promise<YearAggregate | null> {
   return getRequestFactory(API_URL + 'movies/aggregate/year')
 }
 
-export async function getRuntimeRange(): Promise<{
-  _id: Object
-  maxRuntime: number
-  minRuntime: number
-} | null> {
+export async function getRuntimeRange(): Promise<RuntimeAggregate | null> {
   return getRequestFactory(API_URL + 'movies/aggregate/runtime')
 }
 
@@ -121,19 +147,15 @@ export async function getMaxRuntimeByType() {
   return getRequestFactory(API_URL + 'movies/aggregate/runtimeByType')
 }
 
-export async function getDistinctRateds(): Promise<string[] | null> {
+export async function getDistinctRateds(): Promise<RatedAggregate | null> {
   return getRequestFactory(API_URL + 'movies/aggregate/rated')
 }
 
-export async function getDistinctGenres(): Promise<string[] | null> {
+export async function getDistinctGenres(): Promise<GenreAggregate | null> {
   return getRequestFactory(API_URL + 'movies/aggregate/genre')
 }
 
-export async function getImdbRatingRange(): Promise<{
-  _id: Object
-  maxIMDBRating: number
-  minIMDBRating: number
-} | null> {
+export async function getImdbRatingRange(): Promise<ImdbAggregate | null> {
   return getRequestFactory(API_URL + 'movies/aggregate/imdb')
 }
 //#endregion
