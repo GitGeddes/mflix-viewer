@@ -251,8 +251,15 @@ function onClickRating(movie: FullMovie, newRating: string | number) {
             <TruncatedField :text="item.rated" width="110"></TruncatedField>
           </td>
           <td>{{ item.type }}</td>
-          <td :class="[{ 'bg-blue-grey-darken-1': hasFavoriteGenres(item) }]">
-            <TruncatedField :text="item.genres?.join(', ')" width="200"></TruncatedField>
+          <td>
+            <div class="d-flex flex-row align-center">
+              <v-icon
+                v-if="hasFavoriteGenres(item)"
+                color="pink-lighten-2"
+                icon="mdi-heart"
+              ></v-icon>
+              <TruncatedField :text="item.genres?.join(', ')" width="200"></TruncatedField>
+            </div>
           </td>
           <td>{{ item.imdb.rating }}</td>
           <td>
