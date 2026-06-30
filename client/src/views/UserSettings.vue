@@ -13,8 +13,8 @@ const { genreFilter, genreFilterOptions, onClickGetFavoriteGenres, onClickSaveFa
     <h1>User settings</h1>
     <v-divider></v-divider>
     <div v-if="user !== undefined">
-      <h2>Name: {{ user.displayname ? user.displayname : user.username }}</h2>
-      <v-btn @click="onClickLogout" elevation="5">Log out</v-btn>
+      <h3>Name: {{ user.displayname ? user.displayname : user.username }}</h3>
+      <v-btn @click="onClickLogout" elevation="5" border>Log out</v-btn>
     </div>
   </v-card>
   <v-card>

@@ -233,25 +233,29 @@ function onClickRating(movie: FullMovie) {
         </v-dialog>
       </template>
 
+      <!-- Add a skeleton of the movies table that appears before loading is done -->
+      <template v-slot:loading>
+        <v-skeleton-loader type="table-row@10" height="600"></v-skeleton-loader>
+      </template>
+
       <!-- Specific row -->
       <template v-slot:item="{ item }">
         <tr :key="`$${item._id}`" @click="clickRow(item)">
-          <td :class="[{ 'bg-green-darken-2': item.isWatchlisted }]">
-            <div class="d-flex justify-center" @click.stop="">
+          <td @click.stop="">
+            <v-btn
+              class="d-flex justify-center"
+              :class="[{ 'bg-green-darken-2': item.isWatchlisted }, 'cursor-pointer', 'border']"
+              style="padding: 10px; border-radius: 5px"
+              @click="item.isWatchlisted ? removeFromWatchlist(item._id) : addToWatchlist(item._id)"
+            >
               <v-icon
                 v-if="item.isWatchlisted"
                 color="medium-emphasis"
                 icon="mdi-playlist-remove"
-                @click="removeFromWatchlist(item._id)"
               ></v-icon>
 
-              <v-icon
-                v-else
-                color="medium-emphasis"
-                icon="mdi-playlist-plus"
-                @click="addToWatchlist(item._id)"
-              ></v-icon>
-            </div>
+              <v-icon v-else color="medium-emphasis" icon="mdi-playlist-plus"></v-icon>
+            </v-btn>
           </td>
           <td>
             <TruncatedField :text="item.title" width="300"></TruncatedField>
