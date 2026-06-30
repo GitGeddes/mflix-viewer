@@ -5,16 +5,20 @@ import {
   postRemoveFromWatchlist,
   putAddToWatchlist,
   type MoviesDictionary,
-  type MovieWithWatchlist,
+  type FullMovie,
+  putAddToRatings,
+  postRemoveFromRatings,
 } from '@/services/api'
 import { computed, onMounted, ref, type Ref } from 'vue'
 import useWatchlist from './useWatchlist'
+import useRatings from './useRatings'
 
 export default function useMovies() {
   const { fetchWatchlist } = useWatchlist()
+  const { fetchRatings } = useRatings()
 
   const moviesDict: Ref<MoviesDictionary> = ref({})
-  const movies: Ref<MovieWithWatchlist[]> = computed(() => Object.values(moviesDict.value))
+  const movies: Ref<FullMovie[]> = computed(() => Object.values(moviesDict.value))
 
   // Show the loading text in the data table.
   const isLoading = ref(true)
@@ -33,12 +37,22 @@ export default function useMovies() {
       }
       moviesDict.value = res
       fetchWatchlist()
-        .then((res) => {
+        .then(async (res) => {
           if (!res) return
           Object.values(res).forEach((movie) => {
             // Set the watchlisted flag to true after loading the watchlist
             movie['isWatchlisted'] = true
             moviesDict.value[movie['_id']] = movie
+          })
+          await fetchRatings().then((res) => {
+            if (!res) return
+            Object.values(res).forEach((movie) => {
+              const existingMovie = moviesDict.value[movie['_id']]
+              if (existingMovie) {
+                existingMovie.rating = movie.rating
+                moviesDict.value[movie['_id']] = existingMovie
+              }
+            })
           })
         })
         .finally(() => {
@@ -68,10 +82,32 @@ export default function useMovies() {
     }
   }
 
+  async function addRating(id: string, rating: number) {
+    const result = await putAddToRatings({ rating: { id: id, rating: rating } })
+    if (result && result.message === 'success') {
+      const tempMovie = moviesDict.value[id]
+      if (!tempMovie) return
+      tempMovie.rating = rating
+      moviesDict.value[id] = tempMovie
+    }
+  }
+
+  async function removeRating(id: string, rating: number) {
+    const result = await postRemoveFromRatings({ rating: { id: id, rating: rating } })
+    if (result && result.message === 'success') {
+      const tempMovie = moviesDict.value[id]
+      if (!tempMovie) return
+      tempMovie.rating = undefined
+      moviesDict.value[id] = tempMovie
+    }
+  }
+
   return {
     movies,
     isLoading,
     addToWatchlist,
     removeFromWatchlist,
+    addRating,
+    removeRating,
   }
 }

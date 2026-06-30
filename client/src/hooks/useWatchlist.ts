@@ -1,8 +1,8 @@
-import { getWatchlist, postFetchMovies, type Movie } from '@/services/api'
+import { getWatchlist, postFetchMovies, type FullMovie } from '@/services/api'
 import { onMounted, ref, type Ref } from 'vue'
 
 export default function useWatchlist() {
-  const watchlist: Ref<Movie[]> = ref([])
+  const watchlist: Ref<FullMovie[]> = ref([])
 
   // Show the loading text in the data table.
   const isLoading = ref(true)

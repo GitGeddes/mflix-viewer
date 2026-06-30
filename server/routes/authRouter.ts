@@ -154,27 +154,6 @@ router.get('/favoriteGenres', async function (req, res) {
   }
 })
 
-// TODO: remove this and test buttons on user profile
-// POST watchlist to collection
-router.post('/watchlist', async function (req, res) {
-  let collection = await db.collection('watchlists')
-  try {
-    const query = { _id: new ObjectId(req.user.userId) }
-    const existing = await collection.findOne(query)
-    if (existing) {
-      // Need to update existing document
-      collection.updateOne(query, { $addToSet: { movies: { $each: req.body } } })
-      res.status(200).json({ message: 'success' })
-    } else {
-      // Create document
-      const result = await collection.insertOne({ ...query, ...req.body })
-      res.status(200).json({ message: 'success' })
-    }
-  } catch (error) {
-    res.status(500).json({ error: 'Internal server error' })
-  }
-})
-
 router.put('/addToWatchlist', async function (req, res) {
   let collection = await db.collection('watchlists')
   try {
@@ -204,8 +183,8 @@ router.post('/removeFromWatchlist', async function (req, res) {
       collection.updateOne(query, { $pull: { movies: { $in: req.body.movies } } })
       res.status(200).json({ message: 'success' })
     } else {
-      // Create document
-      const result = await collection.insertOne({ ...query, ...req.body })
+      // Create document for the user with an empty watchlist
+      const result = await collection.insertOne({ ...query, movies: [] })
       res.status(200).json({ message: 'success' })
     }
   } catch (error) {
@@ -220,6 +199,64 @@ router.get('/watchlist', async function (req, res) {
     const query = { _id: new ObjectId(req.user.userId) }
     const existing = await collection.findOne(query)
     res.status(200).json({ watchlist: existing })
+  } catch (error) {
+    res.status(500).json({ error: 'Internal server error' })
+  }
+})
+
+router.put('/addRating', async function (req, res) {
+  let collection = await db.collection('ratings')
+  try {
+    const query = { _id: new ObjectId(req.user.userId) }
+    const existing = await collection.findOne(query)
+    if (existing) {
+      // Need to update existing document
+      collection.updateOne(query, {
+        $set: { [`ratings.${req.body.rating.id}`]: req.body.rating.rating },
+      })
+      res.status(200).json({ message: 'success' })
+    } else {
+      // Create document
+      console.log('add rating requset', req.body)
+      const result = await collection.insertOne({
+        ...query,
+        ratings: {
+          [`${req.body.rating.id}`]: req.body.rating.rating,
+        },
+      })
+      res.status(200).json({ message: 'success' })
+    }
+  } catch (error) {
+    res.status(500).json({ error: 'Internal server error' })
+  }
+})
+
+router.post('/deleteRating', async function (req, res) {
+  let collection = await db.collection('ratings')
+  try {
+    const query = { _id: new ObjectId(req.user.userId) }
+    const existing = await collection.findOne(query)
+    if (existing) {
+      // Need to update existing document
+      collection.updateOne(query, { $unset: { ratings: { $in: req.body.movies } } })
+      res.status(200).json({ message: 'success' })
+    } else {
+      // Create document
+      const result = await collection.insertOne({ ...query, ratings: {} })
+      res.status(200).json({ message: 'success' })
+    }
+  } catch (error) {
+    res.status(500).json({ error: 'Internal server error' })
+  }
+})
+
+// GET watchlist from collection
+router.get('/ratings', async function (req, res) {
+  let collection = await db.collection('ratings')
+  try {
+    const query = { _id: new ObjectId(req.user.userId) }
+    const existing = await collection.findOne(query)
+    res.status(200).json({ ratings: existing })
   } catch (error) {
     res.status(500).json({ error: 'Internal server error' })
   }

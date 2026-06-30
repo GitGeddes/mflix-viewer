@@ -1,6 +1,20 @@
 import db from '../../src/dbConnection.ts'
 import jwt from 'jsonwebtoken'
 
+interface UserInterface {
+  id: string
+  email: string
+}
+
+export interface WithAuthMiddleware {
+  user: UserInterface
+}
+
+interface WithMessage {
+  message?: string
+  error?: string
+}
+
 export async function authenticateToken(req, res, next) {
   const authHeader = req.headers['authorization']
   const token = authHeader && authHeader.split(' ')[1]
@@ -28,7 +42,7 @@ export async function authenticateToken(req, res, next) {
     }
 
     // Reassign the decoded user object
-    req.user = decoded
+    req.user = decoded as UserInterface
     next()
   })
 }

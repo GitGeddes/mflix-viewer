@@ -118,11 +118,14 @@ export interface Movie {
 type WithWatchlist = {
   isWatchlisted?: boolean
 }
+type WithRating = {
+  rating?: number
+}
 
-export type MovieWithWatchlist = Movie & WithWatchlist
+export type FullMovie = Movie & WithWatchlist & WithRating
 
 export type MoviesDictionary = {
-  [id: string]: MovieWithWatchlist
+  [id: string]: FullMovie
 }
 
 interface YearAggregate {
@@ -300,10 +303,6 @@ export async function getFavoriteGenres() {
 interface WatchlistBody {
   movies: Movie['_id'][]
 }
-export async function postAddToWatchlist(body: WatchlistBody) {
-  return postRequestFactory<WatchlistBody, unknown>(API_URL + 'user/watchlist', body)
-}
-
 export async function putAddToWatchlist(body: WatchlistBody) {
   return putRequestFactory<WatchlistBody, ResponseMessage>(API_URL + 'user/addToWatchlist', body)
 }
@@ -320,6 +319,30 @@ interface FetchWatchlistResult {
 }
 export async function getWatchlist() {
   return getRequestFactory<FetchWatchlistResult>(API_URL + 'user/watchlist')
+}
+type Rating = {
+  id: Movie['_id']
+  rating: number
+}
+interface RatingBody {
+  rating: Rating
+}
+export async function putAddToRatings(body: RatingBody) {
+  return putRequestFactory<RatingBody, ResponseMessage>(API_URL + 'user/addRating', body)
+}
+
+export async function postRemoveFromRatings(body: RatingBody) {
+  return postRequestFactory<RatingBody, ResponseMessage>(API_URL + 'user/deleteRating', body)
+}
+
+type RatingResult = {
+  [id: string]: number
+}
+interface FetchRatingsResult {
+  ratings: { _id: string; ratings: RatingResult } | null
+}
+export async function getRatings() {
+  return getRequestFactory<FetchRatingsResult>(API_URL + 'user/ratings')
 }
 
 interface FetchMoviesBody {

@@ -6,7 +6,7 @@ import useMovies from '@/hooks/useMovies.ts'
 import useFilters from '@/hooks/useFilters.ts'
 import useGenres from '@/hooks/useGenres.ts'
 import { ref } from 'vue'
-import type { MovieWithWatchlist } from '@/services/api.ts'
+import type { FullMovie } from '@/services/api.ts'
 
 const router = useRouter()
 
@@ -31,11 +31,11 @@ const {
   enableYearFilter,
 } = useFilters()
 
-const { movies, isLoading, addToWatchlist, removeFromWatchlist } = useMovies()
+const { movies, isLoading, addToWatchlist, removeFromWatchlist, addRating } = useMovies()
 
 const { hasFavoriteGenres } = useGenres()
 
-function sortWatchlists(a: MovieWithWatchlist, b: MovieWithWatchlist) {
+function sortWatchlists(a: FullMovie, b: FullMovie) {
   if (a.isWatchlisted && !b.isWatchlisted) return -1
   else if (!a.isWatchlisted && b.isWatchlisted) return 1
   else return 0
@@ -65,10 +65,16 @@ const headers = [
   { key: 'genres', title: 'Genres' },
   { key: 'imdb.rating', title: 'IMDB Rating' },
   { key: 'poster', title: 'Poster', sortable: false },
+  { key: 'rating', title: 'Rating' },
 ]
 
-function clickRow(row: MovieWithWatchlist) {
+function clickRow(row: FullMovie) {
   router.push('/movies/' + row._id)
+}
+
+function onClickRating(movie: FullMovie, newRating: string | number) {
+  console.log('clicked rating', movie.rating, newRating)
+  addRating(movie._id, movie.rating ? movie.rating : 0)
 }
 </script>
 
@@ -210,6 +216,7 @@ function clickRow(row: MovieWithWatchlist) {
         </v-dialog>
       </template>
 
+      <!-- Specific row -->
       <template v-slot:item="{ item }">
         <tr :key="`$${item._id}`" @click="clickRow(item)">
           <td :class="[{ 'bg-green-darken-2': item.isWatchlisted }]">
@@ -244,6 +251,19 @@ function clickRow(row: MovieWithWatchlist) {
           <td>{{ item.imdb.rating }}</td>
           <td>
             <PosterImage :poster="item.poster"></PosterImage>
+          </td>
+          <td>
+            <div @click.stop="">
+              <v-rating
+                v-model="item.rating"
+                half-increments
+                hover
+                :length="5"
+                :size="32"
+                active-color="primary"
+                @update:model-value="(value) => onClickRating(item, value)"
+              />
+            </div>
           </td>
         </tr>
       </template>
