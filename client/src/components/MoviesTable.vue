@@ -30,6 +30,7 @@ const {
   yearFilterOptions,
   enableYearFilter,
 } = useFilters()
+
 const { movies, isLoading, addToWatchlist, removeFromWatchlist } = useMovies()
 
 const { hasFavoriteGenres } = useGenres()
@@ -41,6 +42,17 @@ function sortWatchlists(a: MovieWithWatchlist, b: MovieWithWatchlist) {
 }
 
 const sortBy = ref([{ key: 'watchlist', order: 'asc' as const, sortRaw: sortWatchlists }])
+
+// Dialog state for filters
+const showFilterDialog = ref(false)
+
+function toggleFilters() {
+  showFilterDialog.value = !showFilterDialog.value
+}
+
+function closeFilterDialog() {
+  showFilterDialog.value = false
+}
 
 // Headers for the data table
 const headers = [
@@ -56,63 +68,15 @@ const headers = [
 ]
 
 function clickRow(row: MovieWithWatchlist) {
-  // TODO: Pass the movie as parameters to the individual movie page
-  // router.push({ path: '/movies/' + row.item._id, params: row.item })
   router.push('/movies/' + row._id)
 }
 </script>
 
 <template>
-  <v-row>
-    <!-- Year filter -->
-    <v-col cols="4" class="px-4">
-      <h4>Choose Year range</h4>
-      <v-range-slider
-        v-model="yearFilter"
-        :max="yearFilterOptions[1]"
-        :min="yearFilterOptions[0]"
-        step="1"
-        thumb-label="hover"
-      ></v-range-slider>
-    </v-col>
-    <!-- Runtime filter -->
-    <v-col cols="4" class="px-4">
-      <h4>Choose runtime range</h4>
-      <v-range-slider
-        v-model="runtimeFilter"
-        :max="runtimeFilterOptions[1]"
-        :min="runtimeFilterOptions[0]"
-        step="1"
-        thumb-label="hover"
-      ></v-range-slider>
-    </v-col>
-    <!-- IMDB Rating filter -->
-    <v-col cols="4" class="px-4">
-      <h4>Choose IMDB Rating range</h4>
-      <v-range-slider
-        v-model="imdbFilter"
-        :max="imdbFilterOptions[1]"
-        :min="imdbFilterOptions[0]"
-        step="0.1"
-        thumb-label="hover"
-      ></v-range-slider>
-    </v-col>
-  </v-row>
-  <!-- Rated filter -->
   <v-card>
-    <h4>Choose Rated options</h4>
-    <v-chip-group v-model="ratedFilter" column multiple>
-      <v-chip v-for="rated in ratedFilterOptions" :key="rated" :text="rated" filter></v-chip>
-    </v-chip-group>
-  </v-card>
-  <!-- Genre filters -->
-  <v-card>
-    <h4>Choose genres</h4>
-    <v-chip-group v-model="genreFilter" column multiple>
-      <v-chip v-for="genre in genreFilterOptions" :key="genre" :text="genre" filter></v-chip>
-    </v-chip-group>
-  </v-card>
-  <v-card title="Movies" flat data-testid="title">
+    <!-- Table -->
+    <v-card-title class="font-weight-bold text-h5 my-2">Movies</v-card-title>
+
     <v-data-table
       :headers="headers"
       :sort-by="sortBy"
@@ -127,6 +91,7 @@ function clickRow(row: MovieWithWatchlist) {
       striped="odd"
     >
       <template v-slot:top>
+        <!-- Search text field -->
         <v-text-field
           v-model="search"
           label="Search"
@@ -136,17 +101,115 @@ function clickRow(row: MovieWithWatchlist) {
           single-line
         ></v-text-field>
 
-        <!-- Filter toggle controls (AI) -->
-        <div class="mt-4 d-flex gap-4">
-          <v-checkbox v-model="enableYearFilter" label="Year Range Filter"></v-checkbox>
-          <v-checkbox v-model="enableRuntimeFilter" label="Runtime Range Filter"></v-checkbox>
-          <v-checkbox v-model="enableRatedFilter" label="Rated Filter"></v-checkbox>
-          <v-checkbox v-model="enableGenreFilter" label="Genre Filter"></v-checkbox>
-          <v-checkbox v-model="enableIMDBFilter" label="IMDB Rating Filter"></v-checkbox>
-        </div>
+        <!-- Dialog Filter Controls (AI written then cleaned up) -->
+        <v-dialog v-model="showFilterDialog" max-width="700px" data-testid="filter-dialog">
+          <template #activator="{ props: { 'v-bind': dialogProps } }">
+            <!-- Filters Toggle Button -->
+            <v-btn class="mt-4" variant="outlined" rounded="lg" @click="toggleFilters()">
+              <template v-slot:prepend>
+                <v-icon start>{{ showFilterDialog ? 'mdi-filter-remove' : 'mdi-filter' }}</v-icon>
+              </template>
+              {{ showFilterDialog ? 'Close Filters' : 'Show Filters' }}
+            </v-btn>
+          </template>
+
+          <v-card style="max-height: 90vh; overflow-y: auto">
+            <v-card-title class="d-flex justify-space-between align-center">
+              <span class="text-h6 font-weight-bold">Filter Options</span>
+              <v-btn
+                icon="mdi-close"
+                variant="plain"
+                size="small"
+                @click="closeFilterDialog()"
+              ></v-btn>
+            </v-card-title>
+
+            <v-card-text>
+              <!-- Year filter -->
+              <div class="py-4 px-2">
+                <v-checkbox v-model="enableYearFilter" label="Choose Year range"></v-checkbox>
+                <v-range-slider
+                  :disabled="!enableYearFilter"
+                  v-model="yearFilter"
+                  :max="yearFilterOptions[1]"
+                  :min="yearFilterOptions[0]"
+                  step="1"
+                  thumb-label="hover"
+                ></v-range-slider>
+              </div>
+
+              <!-- Runtime filter -->
+              <div class="py-4 px-2">
+                <v-checkbox v-model="enableRuntimeFilter" label="Choose runtime range"></v-checkbox>
+                <v-range-slider
+                  :disabled="!enableRuntimeFilter"
+                  v-model="runtimeFilter"
+                  :max="runtimeFilterOptions[1]"
+                  :min="runtimeFilterOptions[0]"
+                  step="1"
+                  thumb-label="hover"
+                ></v-range-slider>
+              </div>
+
+              <!-- IMDB Rating filter -->
+              <div class="py-4 px-2">
+                <v-checkbox
+                  v-model="enableIMDBFilter"
+                  label="Choose IMDB Rating range"
+                ></v-checkbox>
+                <v-range-slider
+                  :disabled="!enableIMDBFilter"
+                  v-model="imdbFilter"
+                  :max="imdbFilterOptions[1]"
+                  :min="imdbFilterOptions[0]"
+                  step="0.1"
+                  thumb-label="hover"
+                ></v-range-slider>
+              </div>
+
+              <!-- Rated filter -->
+              <div class="py-4 px-2">
+                <v-checkbox v-model="enableRatedFilter" label="Choose Rated options"></v-checkbox>
+                <v-chip-group v-model="ratedFilter" column multiple :disabled="!enableRatedFilter">
+                  <v-chip
+                    v-for="rated in ratedFilterOptions"
+                    :key="rated"
+                    :text="rated"
+                    filter
+                  ></v-chip>
+                </v-chip-group>
+              </div>
+
+              <!-- Genre filters -->
+              <div class="py-4 px-2">
+                <v-checkbox v-model="enableGenreFilter" label="Choose genres"></v-checkbox>
+                <v-chip-group v-model="genreFilter" column multiple :disabled="!enableGenreFilter">
+                  <v-chip
+                    v-for="genre in genreFilterOptions"
+                    :key="genre"
+                    :text="genre"
+                    filter
+                  ></v-chip>
+                </v-chip-group>
+              </div>
+            </v-card-text>
+
+            <v-card-actions>
+              <v-spacer></v-spacer>
+              <v-btn
+                block
+                color="primary"
+                variant="tonal"
+                :disabled="showFilterDialog === false"
+                @click="closeFilterDialog()"
+              >
+                Close dialog
+              </v-btn>
+            </v-card-actions>
+          </v-card>
+        </v-dialog>
       </template>
 
-      <!-- Customize certain aspects of each row -->
       <template v-slot:item="{ item }">
         <tr :key="`$${item._id}`" @click="clickRow(item)">
           <td :class="[{ 'bg-green-darken-2': item.isWatchlisted }]">
