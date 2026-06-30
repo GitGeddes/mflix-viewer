@@ -15,6 +15,8 @@ interface WithMessage {
   error?: string
 }
 
+// Verify the authentication token and forward valid requests with an additional User object.
+// This User object is then used to verify ownership of other documents like the Watchlist and the Ratings list.
 export async function authenticateToken(req, res, next) {
   const authHeader = req.headers['authorization']
   const token = authHeader && authHeader.split(' ')[1]

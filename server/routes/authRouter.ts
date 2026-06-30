@@ -77,6 +77,8 @@ router.post('/login', async function (req, res) {
 
 // Middleware
 // Must be used after the createUser and login endpoints.
+// The resulting User object in the request is use to verify ownership of
+// other documents like the Watchlist or the Ratings list.
 router.use(async function (req, res, next) {
   await authenticateToken(req, res, next)
 })
