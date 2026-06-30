@@ -1,4 +1,4 @@
-import { getAllAggregates, type Movie } from '@/services/api'
+import { getAllAggregates, type FullMovie, type Movie } from '@/services/api'
 import { computed, onMounted, ref, type Ref } from 'vue'
 
 export default function useFilters() {
@@ -11,6 +11,7 @@ export default function useFilters() {
   const enableRatedFilter = ref(false)
   const enableGenreFilter = ref(false)
   const enableIMDBFilter = ref(false)
+  const enablePersonalRatingFilter = ref(false)
 
   // Year slider
   const yearFilter: Ref<[number, number]> = ref([0, 0])
@@ -47,7 +48,8 @@ export default function useFilters() {
       boolToString(enableIMDBFilter.value) +
       boolToString(enableRatedFilter.value) +
       boolToString(enableRuntimeFilter.value) +
-      boolToString(enableYearFilter.value)
+      boolToString(enableYearFilter.value) +
+      boolToString(enablePersonalRatingFilter.value)
     )
   })
 
@@ -113,6 +115,13 @@ export default function useFilters() {
     return imdbRating >= imdbFilter.value[0] && imdbRating <= imdbFilter.value[1]
   }
 
+  // Exclude items the user has already rated
+  function personalRatingFilter(item: FullMovie): boolean {
+    if (!enablePersonalRatingFilter.value) return true
+
+    return item.rating === undefined
+  }
+
   function customFilter(item: Movie): boolean {
     const namedGenres = genreFilterOptions.value.filter((val, index) =>
       genreFilter.value.includes(index),
@@ -126,7 +135,8 @@ export default function useFilters() {
       runtimeColumnFilter(item) &&
       ratedColumnFilter(item, namedRateds) &&
       genreColumnFilter(item, namedGenres) &&
-      imdbColumnFilter(item)
+      imdbColumnFilter(item) &&
+      personalRatingFilter(item)
     )
   }
 
@@ -162,5 +172,6 @@ export default function useFilters() {
     enableRatedFilter,
     enableRuntimeFilter,
     enableYearFilter,
+    enablePersonalRatingFilter,
   }
 }

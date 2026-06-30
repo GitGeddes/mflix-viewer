@@ -29,6 +29,7 @@ const {
   yearFilter,
   yearFilterOptions,
   enableYearFilter,
+  enablePersonalRatingFilter,
 } = useFilters()
 
 const { movies, isLoading, addToWatchlist, removeFromWatchlist, addRating } = useMovies()
@@ -68,12 +69,13 @@ const headers = [
   { key: 'rating', title: 'Rating' },
 ]
 
+// Open the individual movie page whenever the user clicks the row
 function clickRow(row: FullMovie) {
   router.push('/movies/' + row._id)
 }
 
-function onClickRating(movie: FullMovie, newRating: string | number) {
-  console.log('clicked rating', movie.rating, newRating)
+// Update the rating when it is changed
+function onClickRating(movie: FullMovie) {
   addRating(movie._id, movie.rating ? movie.rating : 0)
 }
 </script>
@@ -109,7 +111,7 @@ function onClickRating(movie: FullMovie, newRating: string | number) {
 
         <!-- Dialog Filter Controls (AI written then cleaned up) -->
         <v-dialog v-model="showFilterDialog" max-width="700px" data-testid="filter-dialog">
-          <template #activator="{ props: { 'v-bind': dialogProps } }">
+          <template #activator="{ props: {} }">
             <!-- Filters Toggle Button -->
             <v-btn class="mt-4" variant="outlined" rounded="lg" @click="toggleFilters()">
               <template v-slot:prepend>
@@ -132,9 +134,18 @@ function onClickRating(movie: FullMovie, newRating: string | number) {
             <v-divider></v-divider>
 
             <v-card-text>
+              <!-- Hide personal ratings -->
+              <div class="py-4 px-2">
+                <v-checkbox
+                  v-model="enablePersonalRatingFilter"
+                  label="Hide movies you've already rated"
+                ></v-checkbox>
+              </div>
+              <v-divider></v-divider>
+
               <!-- Year filter -->
               <div class="py-4 px-2">
-                <v-checkbox v-model="enableYearFilter" label="Choose Year range"></v-checkbox>
+                <v-checkbox v-model="enableYearFilter" label="Year filter"></v-checkbox>
                 <v-range-slider
                   :disabled="!enableYearFilter"
                   v-model="yearFilter"
@@ -148,7 +159,7 @@ function onClickRating(movie: FullMovie, newRating: string | number) {
 
               <!-- Runtime filter -->
               <div class="py-4 px-2">
-                <v-checkbox v-model="enableRuntimeFilter" label="Choose runtime range"></v-checkbox>
+                <v-checkbox v-model="enableRuntimeFilter" label="Runtime filter"></v-checkbox>
                 <v-range-slider
                   :disabled="!enableRuntimeFilter"
                   v-model="runtimeFilter"
@@ -162,10 +173,7 @@ function onClickRating(movie: FullMovie, newRating: string | number) {
 
               <!-- IMDB Rating filter -->
               <div class="py-4 px-2">
-                <v-checkbox
-                  v-model="enableIMDBFilter"
-                  label="Choose IMDB Rating range"
-                ></v-checkbox>
+                <v-checkbox v-model="enableIMDBFilter" label="IMDB Rating filter"></v-checkbox>
                 <v-range-slider
                   :disabled="!enableIMDBFilter"
                   v-model="imdbFilter"
@@ -179,7 +187,10 @@ function onClickRating(movie: FullMovie, newRating: string | number) {
 
               <!-- Rated filter -->
               <div class="py-4 px-2">
-                <v-checkbox v-model="enableRatedFilter" label="Choose Rated options"></v-checkbox>
+                <v-checkbox
+                  v-model="enableRatedFilter"
+                  label="Choose Age Rating filters"
+                ></v-checkbox>
                 <v-chip-group v-model="ratedFilter" column multiple :disabled="!enableRatedFilter">
                   <v-chip
                     v-for="rated in ratedFilterOptions"
@@ -193,7 +204,7 @@ function onClickRating(movie: FullMovie, newRating: string | number) {
 
               <!-- Genre filters -->
               <div class="py-4 px-2">
-                <v-checkbox v-model="enableGenreFilter" label="Choose genres"></v-checkbox>
+                <v-checkbox v-model="enableGenreFilter" label="Choose Genre filters"></v-checkbox>
                 <v-chip-group v-model="genreFilter" column multiple :disabled="!enableGenreFilter">
                   <v-chip
                     v-for="genre in genreFilterOptions"
@@ -253,6 +264,7 @@ function onClickRating(movie: FullMovie, newRating: string | number) {
           <td>{{ item.type }}</td>
           <td>
             <div class="d-flex flex-row align-center">
+              <!-- Add a heart when a favorite genre exists -->
               <v-icon
                 v-if="hasFavoriteGenres(item)"
                 color="pink-lighten-2"
@@ -274,7 +286,7 @@ function onClickRating(movie: FullMovie, newRating: string | number) {
                 :length="5"
                 :size="32"
                 active-color="primary"
-                @update:model-value="(value) => onClickRating(item, value)"
+                @update:model-value="onClickRating(item)"
               />
             </div>
           </td>
