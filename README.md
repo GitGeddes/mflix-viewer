@@ -1,6 +1,6 @@
 # Mflix Viewer
 
-This test is a practice project to learn Vue, Express and MongoDB. There are two parts of this project: the client and the server.
+This is a practice project to learn Vue, Express and MongoDB. There are two parts of this project: the client and the server.
 
 ## Requirements
 

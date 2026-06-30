@@ -1,7 +1,5 @@
 import {
   getAllMovies,
-  getWatchlist,
-  postFetchMovies,
   postRemoveFromWatchlist,
   putAddToWatchlist,
   type MoviesDictionary,

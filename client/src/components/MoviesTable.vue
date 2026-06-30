@@ -129,6 +129,7 @@ function onClickRating(movie: FullMovie, newRating: string | number) {
                 @click="closeFilterDialog()"
               ></v-btn>
             </v-card-title>
+            <v-divider></v-divider>
 
             <v-card-text>
               <!-- Year filter -->
@@ -143,6 +144,7 @@ function onClickRating(movie: FullMovie, newRating: string | number) {
                   thumb-label="hover"
                 ></v-range-slider>
               </div>
+              <v-divider></v-divider>
 
               <!-- Runtime filter -->
               <div class="py-4 px-2">
@@ -156,6 +158,7 @@ function onClickRating(movie: FullMovie, newRating: string | number) {
                   thumb-label="hover"
                 ></v-range-slider>
               </div>
+              <v-divider></v-divider>
 
               <!-- IMDB Rating filter -->
               <div class="py-4 px-2">
@@ -172,6 +175,7 @@ function onClickRating(movie: FullMovie, newRating: string | number) {
                   thumb-label="hover"
                 ></v-range-slider>
               </div>
+              <v-divider></v-divider>
 
               <!-- Rated filter -->
               <div class="py-4 px-2">
@@ -185,6 +189,7 @@ function onClickRating(movie: FullMovie, newRating: string | number) {
                   ></v-chip>
                 </v-chip-group>
               </div>
+              <v-divider></v-divider>
 
               <!-- Genre filters -->
               <div class="py-4 px-2">
@@ -199,6 +204,7 @@ function onClickRating(movie: FullMovie, newRating: string | number) {
                 </v-chip-group>
               </div>
             </v-card-text>
+            <v-divider></v-divider>
 
             <v-card-actions>
               <v-spacer></v-spacer>
