@@ -1,10 +1,10 @@
 import {
   getAllMovies,
   postRemoveFromWatchlist,
-  putAddToWatchlist,
+  patchAddToWatchlist,
   type MoviesDictionary,
   type FullMovie,
-  putAddToRatings,
+  patchAddToRatings,
   postRemoveFromRatings,
 } from '@/services/api'
 import { computed, onMounted, ref, type Ref } from 'vue'
@@ -61,7 +61,7 @@ export default function useMovies() {
   }
 
   async function addToWatchlist(id: string) {
-    const result = await putAddToWatchlist({ movies: [id] })
+    const result = await patchAddToWatchlist({ movies: [id] })
     if (result && result.message === 'success') {
       const tempMovie = moviesDict.value[id]
       if (!tempMovie) return
@@ -81,7 +81,7 @@ export default function useMovies() {
   }
 
   async function addRating(id: string, rating: number) {
-    const result = await putAddToRatings({ rating: { id: id, rating: rating } })
+    const result = await patchAddToRatings({ rating: { id: id, rating: rating } })
     if (result && result.message === 'success') {
       const tempMovie = moviesDict.value[id]
       if (!tempMovie) return

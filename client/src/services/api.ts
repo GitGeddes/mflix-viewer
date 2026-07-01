@@ -52,6 +52,17 @@ async function putRequestFactory<T, V>(url: string, body: T): Promise<V | null> 
   }
 }
 
+// Quickly make PATCH requests
+async function patchRequestFactory<T, V>(url: string, body: T): Promise<V | null> {
+  try {
+    const response = await api.patch(url, body)
+    return response.data
+  } catch (error) {
+    console.error('Error in PUT request:', error)
+    return null
+  }
+}
+
 // Quickly make DELETE requests
 async function deleteRequestFactory<T>(url: string): Promise<T | null> {
   try {
@@ -61,6 +72,16 @@ async function deleteRequestFactory<T>(url: string): Promise<T | null> {
     console.error('Error in DELETE request:', error)
     return null
   }
+}
+
+interface FetchMoviesBody {
+  movies: string[] // Movie IDs
+}
+export async function postFetchMovies(body: FetchMoviesBody) {
+  return postRequestFactory<FetchMoviesBody, { movies: MoviesDictionary }>(
+    API_URL + 'movies/list',
+    body,
+  )
 }
 
 //#region Movies API
@@ -252,8 +273,8 @@ export async function postCreateUser(body: CreateUserBody) {
   return postRequestFactory<CreateUserBody, unknown>(API_URL + 'user/createUser', body)
 }
 
-export async function postLogin(body: LoginBody) {
-  const response = await postRequestFactory<LoginBody, LoginResponse>(API_URL + 'user/login', body)
+export async function putLogin(body: LoginBody) {
+  const response = await putRequestFactory<LoginBody, LoginResponse>(API_URL + 'user/login', body)
   if (response) {
     localStorage.setItem(TOKEN_LOCAL_STORAGE_KEY, response.token)
     // Dispatch an event whenever the login storage key is updated
@@ -269,7 +290,7 @@ export async function postLogin(body: LoginBody) {
 }
 
 export async function getSelfUser() {
-  return postRequestFactory<undefined, UserDocument>(API_URL + 'user/me', undefined)
+  return getRequestFactory<UserDocument>(API_URL + 'user/me')
 }
 
 export async function postGetUser(body: GetUserBody) {
@@ -303,8 +324,8 @@ export async function getFavoriteGenres() {
 interface WatchlistBody {
   movies: Movie['_id'][]
 }
-export async function putAddToWatchlist(body: WatchlistBody) {
-  return putRequestFactory<WatchlistBody, ResponseMessage>(API_URL + 'user/addToWatchlist', body)
+export async function patchAddToWatchlist(body: WatchlistBody) {
+  return patchRequestFactory<WatchlistBody, ResponseMessage>(API_URL + 'user/addToWatchlist', body)
 }
 
 export async function postRemoveFromWatchlist(body: WatchlistBody) {
@@ -327,8 +348,8 @@ type Rating = {
 interface RatingBody {
   rating: Rating
 }
-export async function putAddToRatings(body: RatingBody) {
-  return putRequestFactory<RatingBody, ResponseMessage>(API_URL + 'user/addRating', body)
+export async function patchAddToRatings(body: RatingBody) {
+  return patchRequestFactory<RatingBody, ResponseMessage>(API_URL + 'user/addRating', body)
 }
 
 export async function postRemoveFromRatings(body: RatingBody) {
@@ -343,15 +364,5 @@ interface FetchRatingsResult {
 }
 export async function getRatings() {
   return getRequestFactory<FetchRatingsResult>(API_URL + 'user/ratings')
-}
-
-interface FetchMoviesBody {
-  movies: string[] // Movie IDs
-}
-export async function postFetchMovies(body: FetchMoviesBody) {
-  return postRequestFactory<FetchMoviesBody, { movies: MoviesDictionary }>(
-    API_URL + 'movies/',
-    body,
-  )
 }
 //#endregion

@@ -259,8 +259,8 @@ router.get('/aggregate/imdb', async function (req, res, next) {
   res.status(200).send(imdbAggregate)
 })
 
-/** POST fetch list of movies by IDs */
-router.post('/', async function (req, res, next) {
+/** Fetch list of movies by IDs */
+router.post('/list', async function (req, res, next) {
   let collection = db.collection<Movie>('movies')
   try {
     // Need to ensure the IDs are proper MongoDB ObjectIds

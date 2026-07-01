@@ -1,5 +1,5 @@
 import router from '@/router'
-import { postCreateUser, postLogin } from '@/services/api'
+import { postCreateUser, putLogin } from '@/services/api'
 import { ref, type Ref } from 'vue'
 
 export default function useLogin() {
@@ -15,7 +15,7 @@ export default function useLogin() {
       username: username.value,
       displayname: displayname.value,
     })
-    const response = await postLogin({
+    const response = await putLogin({
       email: email.value,
       password: password.value,
     })
@@ -27,7 +27,7 @@ export default function useLogin() {
 
   // TODO: Remove this testing function
   async function onClickLogin() {
-    const response = await postLogin({ email: 'test', password: 'testpass' })
+    const response = await putLogin({ email: 'test', password: 'testpass' })
     if (response) {
       // Navigate to the User page
       router.push('/user')
@@ -35,7 +35,7 @@ export default function useLogin() {
   }
 
   async function onClickSubmit() {
-    const response = await postLogin({
+    const response = await putLogin({
       email: email.value,
       password: password.value,
     })

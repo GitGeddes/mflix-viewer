@@ -33,8 +33,8 @@ router.post('/createUser', async function (req, res) {
 })
 
 // Partially AI coded, had to clean it up
-// POST login request
-router.post('/login', async function (req, res) {
+// PUT login request
+router.put('/login', async function (req, res) {
   const { email, password } = req.body
   let collection = await db.collection('users')
 
@@ -83,7 +83,8 @@ router.use(async function (req, res, next) {
   await authenticateToken(req, res, next)
 })
 
-router.post('/me', async function (req, res) {
+// GET own user's information
+router.get('/me', async function (req, res) {
   let collection = await db.collection('users')
   try {
     // The user should be added by the middleware if the token is valid
@@ -96,6 +97,7 @@ router.post('/me', async function (req, res) {
   }
 })
 
+// POST fetch user by ID
 router.post('/user', async function (req, res) {
   const { userID } = req.body
   let collection = await db.collection('users')
@@ -156,7 +158,7 @@ router.get('/favoriteGenres', async function (req, res) {
   }
 })
 
-router.put('/addToWatchlist', async function (req, res) {
+router.patch('/addToWatchlist', async function (req, res) {
   let collection = await db.collection('watchlists')
   try {
     const query = { _id: new ObjectId(req.user.userId) }
@@ -206,7 +208,7 @@ router.get('/watchlist', async function (req, res) {
   }
 })
 
-router.put('/addRating', async function (req, res) {
+router.patch('/addRating', async function (req, res) {
   let collection = await db.collection('ratings')
   try {
     const query = { _id: new ObjectId(req.user.userId) }
