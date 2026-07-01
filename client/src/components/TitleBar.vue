@@ -6,12 +6,10 @@ import { useRouter } from 'vue-router'
 const drawer = ref(false)
 const isLoggedIn = ref(false)
 
-// TODO: Watch the localStorage to track login state
 const tokenRef = ref(localStorage.getItem(TOKEN_LOCAL_STORAGE_KEY))
 let storageHandler: ((e: CustomEvent<{ storage: string | null }>) => void) | null = null
 
 watch(tokenRef, (curr, prev) => {
-  console.debug('login state changed', curr !== null, 'from previous', prev !== null)
   if (curr !== null && prev === null) {
     isLoggedIn.value = true
   } else if (curr === null && prev !== null) {
@@ -24,7 +22,7 @@ onMounted(() => {
 
   // Listen to storage events for cross-tab updates
   storageHandler = (event: CustomEvent<{ storage: string | null }>) => {
-    if (event.detail.storage === TOKEN_LOCAL_STORAGE_KEY) {
+    if (event.detail.storage) {
       tokenRef.value = localStorage.getItem(TOKEN_LOCAL_STORAGE_KEY)
     } else if (event.detail.storage === null) {
       // Storage cleared, reset the token ref to null

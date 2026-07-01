@@ -282,7 +282,7 @@ export async function postLogout() {
   window.dispatchEvent(
     new CustomEvent<{ storage: string | null }>(LOCAL_STORAGE_UPDATE_KEY, {
       detail: {
-        storage: localStorage.getItem(TOKEN_LOCAL_STORAGE_KEY),
+        storage: null,
       },
     }),
   )
