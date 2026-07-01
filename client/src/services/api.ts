@@ -136,14 +136,14 @@ export interface Movie {
   year: number
 }
 
-type WithWatchlist = {
+type WithWatchlist<T> = T & {
   isWatchlisted?: boolean
 }
-type WithRating = {
+type WithRating<T> = T & {
   rating?: number
 }
 
-export type FullMovie = Movie & WithWatchlist & WithRating
+export type FullMovie = WithWatchlist<WithRating<Movie>>
 
 export type MoviesDictionary = {
   [id: string]: FullMovie
@@ -216,7 +216,6 @@ export async function getDistinctRateds(): Promise<RatedAggregate | null> {
   return getRequestFactory(API_URL + 'movies/aggregate/rated')
 }
 
-// Unused
 export async function getDistinctGenres(): Promise<GenreAggregate | null> {
   return getRequestFactory(API_URL + 'movies/aggregate/genre')
 }
@@ -245,7 +244,7 @@ interface UserDocument {
 
 interface LoginBody {
   email: string
-  password: string
+  password: string // Hashed
 }
 
 interface LoginResponse {
@@ -261,7 +260,7 @@ interface CreateUserBody {
   displayname?: string
   username: string
   email: string
-  password: string
+  password: string // Hashed
 }
 
 interface GetUserBody {
@@ -290,7 +289,12 @@ export async function putLogin(body: LoginBody) {
 }
 
 export async function getSelfUser() {
-  return getRequestFactory<UserDocument>(API_URL + 'user/me')
+  if (localStorage.getItem(TOKEN_LOCAL_STORAGE_KEY)) {
+    // Only send a request when there is a login token to be sent.
+    return getRequestFactory<UserDocument>(API_URL + 'user/me')
+  } else {
+    return Promise.resolve(null)
+  }
 }
 
 export async function postGetUser(body: GetUserBody) {
@@ -307,7 +311,7 @@ export async function postLogout() {
       },
     }),
   )
-  return postRequestFactory<undefined, unknown>(API_URL + 'user/logout', undefined)
+  return postRequestFactory<undefined, { ok: boolean }>(API_URL + 'user/logout', undefined)
 }
 
 interface SaveFavoriteGenresBody {

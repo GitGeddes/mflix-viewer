@@ -3,7 +3,7 @@ import { api, getAllMovies, type Movie } from '@/services/api'
 import MockAdapter from 'axios-mock-adapter'
 
 describe('getAllMovies', () => {
-  const mock = new MockAdapter(api)
+  const mockAPI = new MockAdapter(api)
 
   const BASE_URL = 'http://localhost:3000'
   const API_URL = 'http://localhost:3000/api/'
@@ -22,12 +22,12 @@ describe('getAllMovies', () => {
   }
 
   afterEach(() => {
-    mock.reset()
+    mockAPI.reset()
   })
 
   it('should return movies array on successful request', async () => {
     const mockResponse = { data: [createMockMovie(), createMockMovie()] }
-    mock.onGet(MOCK_MOVIES_URL).reply(200, mockResponse)
+    mockAPI.onGet(MOCK_MOVIES_URL).reply(200, mockResponse)
 
     const result = await getAllMovies()
 
@@ -36,7 +36,7 @@ describe('getAllMovies', () => {
   })
 
   it('should return null when network request fails', async () => {
-    mock.onGet(MOCK_MOVIES_URL).networkError()
+    mockAPI.onGet(MOCK_MOVIES_URL).networkError()
 
     const result = await getAllMovies()
 
@@ -44,7 +44,7 @@ describe('getAllMovies', () => {
   })
 
   it('should return null on 404 Not Found', async () => {
-    mock.onGet(MOCK_MOVIES_URL).reply(404, {})
+    mockAPI.onGet(MOCK_MOVIES_URL).reply(404, {})
 
     const result = await getAllMovies()
 
@@ -52,7 +52,7 @@ describe('getAllMovies', () => {
   })
 
   it('should return null on 500 Server Error', async () => {
-    mock.onGet(MOCK_MOVIES_URL).reply(500, {})
+    mockAPI.onGet(MOCK_MOVIES_URL).reply(500, {})
 
     const result = await getAllMovies()
 
@@ -60,7 +60,7 @@ describe('getAllMovies', () => {
   })
 
   it('should return null on 401 Unauthorized', async () => {
-    mock.onGet(MOCK_MOVIES_URL).reply(401, {})
+    mockAPI.onGet(MOCK_MOVIES_URL).reply(401, {})
 
     const result = await getAllMovies()
 
@@ -69,7 +69,7 @@ describe('getAllMovies', () => {
 
   it('should handle empty movies array from API', async () => {
     const mockResponse = { data: [] }
-    mock.onGet(MOCK_MOVIES_URL).reply(200, mockResponse)
+    mockAPI.onGet(MOCK_MOVIES_URL).reply(200, mockResponse)
 
     const result = await getAllMovies()
 

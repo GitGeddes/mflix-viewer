@@ -23,7 +23,7 @@ export default function useUser() {
 
   async function onClickLogout() {
     postLogout().then((res) => {
-      if (res.ok) {
+      if (res && res.ok) {
         // Delete the saved token because it is now invalid
         localStorage.removeItem(TOKEN_LOCAL_STORAGE_KEY)
         user.value = undefined

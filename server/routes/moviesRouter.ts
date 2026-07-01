@@ -60,11 +60,11 @@ export interface Movie {
   year: number
 }
 
-type WithWatchlist = {
+type WithWatchlist<T> = T & {
   isWatchlisted?: boolean
 }
 
-export type MovieWithWatchlist = Movie & WithWatchlist
+export type MovieWithWatchlist = WithWatchlist<Movie>
 
 export type MoviesDictionary = {
   [id: string]: MovieWithWatchlist
