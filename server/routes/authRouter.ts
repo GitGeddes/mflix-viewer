@@ -1,10 +1,10 @@
 // Express example auth system:
 // https://github.com/expressjs/express/tree/master/examples/auth
 import db from '../src/dbConnection.ts'
-import express from 'express'
+import express, { type Request } from 'express'
 import bcrypt from 'bcrypt'
 import jwt from 'jsonwebtoken'
-import { authenticateToken } from './middleware/authMiddleware.ts'
+import { authenticateToken, type WithAuthMiddleware } from './middleware/authMiddleware.ts'
 import { ObjectId } from 'mongodb'
 
 const secret: string = process.env.JWT_TOKEN!
@@ -84,11 +84,11 @@ router.use(async function (req, res, next) {
 })
 
 // GET own user's information
-router.get('/me', async function (req, res) {
+router.get('/me', async function (req: Request<WithAuthMiddleware<{}>>, res) {
   let collection = await db.collection('users')
   try {
     // The user should be added by the middleware if the token is valid
-    const query = { _id: new ObjectId(req.user.userId) }
+    const query = { _id: new ObjectId(req.body.user.userId) }
     const user = await collection.findOne(query)
 
     res.status(200).json({ user: user })
@@ -120,7 +120,7 @@ router.post('/logout', async function (req, res) {
     // Make sure only the current user can invalidate their own tokens
     const denyEntry = await collection.insertOne({
       token: token,
-      exp: req.user.exp, // Save expiration timestamps to potentially delete later
+      exp: req.body.user.exp, // Save expiration timestamps to potentially delete later
     })
     req.session.destroy(() => {
       console.debug('session destroyed')
@@ -136,7 +136,7 @@ router.post('/logout', async function (req, res) {
 router.post('/favoriteGenres', async function (req, res) {
   let collection = await db.collection('favorite_genres')
   try {
-    const query = { _id: new ObjectId(req.user.userId) }
+    const query = { _id: new ObjectId(req.body.user.userId) }
     const update = { $set: req.body }
     const options = { upsert: true } // Enable upsert (insert when doc doesn't exist)
     collection.updateOne(query, update, options)
@@ -150,7 +150,7 @@ router.post('/favoriteGenres', async function (req, res) {
 router.get('/favoriteGenres', async function (req, res) {
   let collection = await db.collection('favorite_genres')
   try {
-    const query = { _id: new ObjectId(req.user.userId) }
+    const query = { _id: new ObjectId(req.body.user.userId) }
     const genres = await collection.findOne(query)
     res.status(200).json(genres)
   } catch (error) {
@@ -161,7 +161,7 @@ router.get('/favoriteGenres', async function (req, res) {
 router.patch('/addToWatchlist', async function (req, res) {
   let collection = await db.collection('watchlists')
   try {
-    const query = { _id: new ObjectId(req.user.userId) }
+    const query = { _id: new ObjectId(req.body.user.userId) }
     const existing = await collection.findOne(query)
     if (existing) {
       // Need to update existing document
@@ -180,7 +180,7 @@ router.patch('/addToWatchlist', async function (req, res) {
 router.post('/removeFromWatchlist', async function (req, res) {
   let collection = await db.collection('watchlists')
   try {
-    const query = { _id: new ObjectId(req.user.userId) }
+    const query = { _id: new ObjectId(req.body.user.userId) }
     const existing = await collection.findOne(query)
     if (existing) {
       // Need to update existing document
@@ -200,7 +200,7 @@ router.post('/removeFromWatchlist', async function (req, res) {
 router.get('/watchlist', async function (req, res) {
   let collection = await db.collection('watchlists')
   try {
-    const query = { _id: new ObjectId(req.user.userId) }
+    const query = { _id: new ObjectId(req.body.user.userId) }
     const existing = await collection.findOne(query)
     res.status(200).json({ watchlist: existing })
   } catch (error) {
@@ -211,7 +211,7 @@ router.get('/watchlist', async function (req, res) {
 router.patch('/addRating', async function (req, res) {
   let collection = await db.collection('ratings')
   try {
-    const query = { _id: new ObjectId(req.user.userId) }
+    const query = { _id: new ObjectId(req.body.user.userId) }
     const existing = await collection.findOne(query)
     if (existing) {
       // Need to update existing document
@@ -238,7 +238,7 @@ router.patch('/addRating', async function (req, res) {
 router.post('/deleteRating', async function (req, res) {
   let collection = await db.collection('ratings')
   try {
-    const query = { _id: new ObjectId(req.user.userId) }
+    const query = { _id: new ObjectId(req.body.user.userId) }
     const existing = await collection.findOne(query)
     if (existing) {
       // Need to update existing document
@@ -258,7 +258,7 @@ router.post('/deleteRating', async function (req, res) {
 router.get('/ratings', async function (req, res) {
   let collection = await db.collection('ratings')
   try {
-    const query = { _id: new ObjectId(req.user.userId) }
+    const query = { _id: new ObjectId(req.body.user.userId) }
     const existing = await collection.findOne(query)
     res.status(200).json({ ratings: existing })
   } catch (error) {

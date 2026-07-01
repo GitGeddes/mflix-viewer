@@ -1,3 +1,4 @@
+import { type NextFunction, type Request, type Response } from 'express'
 import db from '../../src/dbConnection.ts'
 import jwt from 'jsonwebtoken'
 
@@ -6,18 +7,18 @@ interface UserInterface {
   email: string
 }
 
-export interface WithAuthMiddleware {
+export type WithAuthMiddleware<T> = T & {
   user: UserInterface
 }
 
-interface WithMessage {
+type WithMessage<T> = T & {
   message?: string
   error?: string
 }
 
 // Verify the authentication token and forward valid requests with an additional User object.
 // This User object is then used to verify ownership of other documents like the Watchlist and the Ratings list.
-export async function authenticateToken(req, res, next) {
+export async function authenticateToken(req: Request, res: Response, next: NextFunction) {
   const authHeader = req.headers['authorization']
   const token = authHeader && authHeader.split(' ')[1]
 
@@ -44,7 +45,7 @@ export async function authenticateToken(req, res, next) {
     }
 
     // Reassign the decoded user object
-    req.user = decoded as UserInterface
+    req.body.user = decoded as UserInterface
     next()
   })
 }

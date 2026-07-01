@@ -1,6 +1,6 @@
-import express from 'express'
+import express, { type Request, type Response } from 'express'
 import db from '../src/dbConnection.ts'
-import { ObjectId, type Sort } from 'mongodb'
+import { ObjectId, type WithId, type Sort } from 'mongodb'
 
 const PAGE_LIMIT = 50
 
@@ -71,7 +71,7 @@ export type MoviesDictionary = {
 }
 
 /** GET movies home page. */
-router.get('/', async function (req, res, next) {
+router.get('/', async function (req, res: Response<MoviesDictionary>) {
   let collection = await db.collection<Movie>('movies')
   let results = await collection.find().sort(SORT_TITLE).toArray()
   let moviesDict: MoviesDictionary = {}
@@ -83,7 +83,7 @@ router.get('/', async function (req, res, next) {
 
 // TODO: Pagination is unused
 /** GET specific page of movies. */
-router.get('/page/:page', async function (req, res, next) {
+router.get('/page/:page', async function (req, res) {
   // Make sure the page is always at least 1
   const page = Math.max(parseInt(req.params.page as string, 10) || 1, 1)
   // Zero-based offset for the first element on the page.
@@ -95,19 +95,22 @@ router.get('/page/:page', async function (req, res, next) {
 })
 
 /** GET movie by id. */
-router.get('/:id', async function (req, res, next) {
-  let collection = await db.collection<Movie>('movies')
-  // Match by the requested ID
-  let query = { _id: new ObjectId(req.params.id) }
-  let movieResult = await collection.findOne(query)
-  if (!movieResult) {
-    res.status(404).send('Movie not found')
-    return
-  }
-  let moviesDict: MoviesDictionary = {}
-  moviesDict[movieResult._id.toString()] = movieResult
-  res.status(200).send(moviesDict)
-})
+router.get(
+  '/:id',
+  async function (req: Request<{ id: string }>, res: Response<MoviesDictionary | string>) {
+    let collection = await db.collection<Movie>('movies')
+    // Match by the requested ID
+    let query = { _id: new ObjectId(req.params.id) }
+    let movieResult = await collection.findOne(query)
+    if (!movieResult) {
+      res.status(404).send('Movie not found')
+      return
+    }
+    let moviesDict: MoviesDictionary = {}
+    moviesDict[movieResult._id.toString()] = movieResult
+    res.status(200).send(moviesDict)
+  },
+)
 
 async function getYearsAggregate() {
   let collection = db.collection('movies')
@@ -212,64 +215,67 @@ async function getAllAggregates() {
 }
 
 /** GET all aggregates for each field */
-router.get('/aggregate/all', async function (req, res, next) {
+router.get('/aggregate/all', async function (req, res) {
   let aggregates = await getAllAggregates()
   res.status(200).send(aggregates)
 })
 
 // Unused
 /** GET maximum and minimum of the release year across the Movies collection */
-router.get('/aggregate/year', async function (req, res, next) {
+router.get('/aggregate/year', async function (req, res) {
   let yearsAggregate = await getYearsAggregate()
   res.status(200).send(yearsAggregate)
 })
 
 // Unused
 /** GET maximum and minimum of the runtime across the Movies collection */
-router.get('/aggregate/runtime', async function (req, res, next) {
+router.get('/aggregate/runtime', async function (req, res) {
   let runtimeAggregate = await getRuntimeAggregate()
   res.status(200).send(runtimeAggregate)
 })
 
 // Unused
 /** GET maximum and minimum of the runtime across the Movies collection, grouped by type */
-router.get('/aggregate/runtimeByType', async function (req, res, next) {
+router.get('/aggregate/runtimeByType', async function (req, res) {
   const minMaxObj = await getRuntimeAggregateByType()
   res.status(200).send(minMaxObj)
 })
 
 // Unused
 /** GET all distinct values for the Rated field */
-router.get('/aggregate/rated', async function (req, res, next) {
+router.get('/aggregate/rated', async function (req, res) {
   let ratedAggregate = await getRatedAggregate()
   res.status(200).send(ratedAggregate)
 })
 
 // Unused
 /** GET all distinct values for the Genres field */
-router.get('/aggregate/genre', async function (req, res, next) {
+router.get('/aggregate/genre', async function (req, res) {
   let genreAggregate = await getGenreAggregate()
   res.status(200).send(genreAggregate)
 })
 
 // Unused
 /** GET maximum and minimum of the IMDB rating across the Movies collection */
-router.get('/aggregate/imdb', async function (req, res, next) {
+router.get('/aggregate/imdb', async function (req, res) {
   let imdbAggregate = await getImdbAggregate()
   res.status(200).send(imdbAggregate)
 })
 
 /** Fetch list of movies by IDs */
-router.post('/list', async function (req, res, next) {
-  let collection = db.collection<Movie>('movies')
-  try {
-    // Need to ensure the IDs are proper MongoDB ObjectIds
-    const query = { _id: { $in: req.body.movies.map((val: string) => new ObjectId(val)) } }
-    const result = await collection.find(query).toArray()
-    res.status(200).json({ movies: result })
-  } catch (error) {
-    res.status(500).json({ error: 'Internal server error' })
-  }
-})
+router.post(
+  '/list',
+  async function (req, res: Response<{ movies: WithId<Movie>[] } | { error: string }>) {
+    let collection = db.collection<Movie>('movies')
+    try {
+      // Need to ensure the IDs are proper MongoDB ObjectIds
+      const query = { _id: { $in: req.body.movies.map((val: string) => new ObjectId(val)) } }
+      const result = await collection.find(query).toArray()
+      res.status(200).json({ movies: result })
+    } catch (error) {
+      res.status(500).json({ error: 'Internal server error' })
+    }
+  },
+)
 
 export default router
