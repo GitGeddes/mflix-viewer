@@ -5,7 +5,7 @@ const API_URL = 'http://localhost:3000/api/'
 export const TOKEN_LOCAL_STORAGE_KEY = 'access_token'
 export const LOCAL_STORAGE_UPDATE_KEY = 'login-storage-key-updated'
 
-const api = axios.create({ baseURL: BASE_URL })
+export const api = axios.create({ baseURL: BASE_URL })
 
 api.interceptors.request.use((config) => {
   const token = localStorage.getItem(TOKEN_LOCAL_STORAGE_KEY)
