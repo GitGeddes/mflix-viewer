@@ -15,6 +15,10 @@ export default function useLogin() {
       username: username.value,
       displayname: displayname.value,
     })
+    if (!userDocumentResponse) {
+      // Error or user already exists
+      return
+    }
     const response = await putLogin({
       email: email.value,
       password: password.value,
